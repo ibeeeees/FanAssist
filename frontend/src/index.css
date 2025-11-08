@@ -136,3 +136,35 @@ a {
 a:hover {
   opacity: 0.8;
 }
+
+/* Custom utility for selection buttons */
+@layer utilities {
+  .selection-button {
+    flex: 1;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-top: 1px solid var(--card-border);
+    background-color: var(--surface);
+    color: var(--text);
+  }
+  
+  .selection-button:hover {
+    background-color: var(--surface-hover);
+  }
+  
+  .selection-button.active {
+    background-color: var(--color-accent1);
+    color: #000000;
+  }
+  
+  .selection-button.active:hover {
+    opacity: 0.9;
+  }
+  
+  .selection-button-left {
+    border-right: 1px solid var(--card-border);
+  }
+}
