@@ -1,13 +1,110 @@
 @import "tailwindcss";
+@import "./styles/variables.css";
 
+/* Custom light variant: applies when element is descendant of .light */
+@custom-variant light (&:is(.light *));
+
+/* Tailwind v4 @theme - define tokens inline using CSS variables */
+@theme {
+  /* Brand colors mapped to CSS variables */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent1: var(--color-accent1);
+  --color-accent2: var(--color-accent2);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-border: var(--color-border);
+  
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-subtle: var(--color-text-subtle);
+
+  /* Button colors - all states */
+  --color-btn-default: var(--btn-default);
+  --color-btn-default-hover: var(--btn-default-hover);
+  --color-btn-default-active: var(--btn-default-active);
+  --color-btn-default-text: var(--btn-default-text);
+
+  --color-btn-primary: var(--btn-primary);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-primary-active: var(--btn-primary-active);
+  --color-btn-primary-text: var(--btn-primary-text);
+  --color-btn-primary-highlight: var(--btn-primary-highlight);
+
+  --color-btn-secondary: var(--btn-secondary);
+  --color-btn-secondary-hover: var(--btn-secondary-hover);
+  --color-btn-secondary-active: var(--btn-secondary-active);
+  --color-btn-secondary-text: var(--btn-secondary-text);
+  --color-btn-secondary-highlight: var(--btn-secondary-highlight);
+
+  --color-btn-success: var(--btn-success);
+  --color-btn-success-hover: var(--btn-success-hover);
+  --color-btn-success-active: var(--btn-success-active);
+  --color-btn-success-text: var(--btn-success-text);
+  --color-btn-success-highlight: var(--btn-success-highlight);
+
+  --color-btn-error: var(--btn-error);
+  --color-btn-error-hover: var(--btn-error-hover);
+  --color-btn-error-active: var(--btn-error-active);
+  --color-btn-error-text: var(--btn-error-text);
+  --color-btn-error-highlight: var(--btn-error-highlight);
+
+  --color-btn-ghost: var(--btn-ghost);
+  --color-btn-ghost-hover: var(--btn-ghost-hover);
+  --color-btn-ghost-active: var(--btn-ghost-active);
+  --color-btn-ghost-text: var(--btn-ghost-text);
+  --color-btn-ghost-border: var(--btn-ghost-border);
+
+  /* Card colors */
+  --color-card-bg: var(--card-bg);
+  --color-card-bg-hover: var(--card-bg-hover);
+  --color-card-bg-active: var(--card-bg-active);
+  --color-card-border: var(--card-border);
+  --color-card-border-hover: var(--card-border-hover);
+  --color-card-shadow: var(--card-shadow);
+  --color-card-shadow-hover: var(--card-shadow-hover);
+
+  --color-card-highlight-primary: var(--card-highlight-primary);
+  --color-card-highlight-secondary: var(--card-highlight-secondary);
+  --color-card-highlight-success: var(--card-highlight-success);
+  --color-card-highlight-error: var(--card-highlight-error);
+
+  /* Border radius */
+  --radius-sm: var(--radius-sm);
+  --radius: var(--radius);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Spacing */
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing: var(--spacing);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  /* Fonts */
+  --font-family-sans: var(--font-sans);
+  --font-family-mono: var(--font-mono);
+}
+
+/* Base styles */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,13 +112,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color var(--transition), color var(--transition);
 }
 
 body {
@@ -32,39 +127,12 @@ body {
   min-height: 100vh;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
+a {
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
+  color: var(--color-primary);
+  text-decoration: inherit;
+  transition: color var(--transition-fast);
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+a:hover {
+  opacity: 0.8;
 }

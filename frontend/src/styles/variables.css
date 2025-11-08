@@ -1,0 +1,206 @@
+/* CSS Variables - PrizePicks Theme */
+
+:root {
+  /* Brand Colors - PrizePicks inspired */
+  --color-primary: #050615;     /* Dark navy/black background */
+  --color-secondary: #121320;   /* Slightly lighter surface */
+  --color-accent1: #6eff00;     /* Neon green - PrizePicks signature */
+  --color-accent2: #7f00ff;     /* Neon purple - PrizePicks signature */
+  --color-success: #00ff88;     /* Bright green for wins */
+  --color-warning: #ffd700;     /* Gold for warnings */
+  --color-error: #ff1414;       /* Bright red for errors */
+  
+  /* Base UI Colors */
+  --color-bg: #050614;
+  --color-surface: #121320;
+  --color-surface-hover: #1a1a2e;
+  --color-border: #2c2c39;
+  
+  --color-text: #ffffff;
+  --color-text-muted: #c7c6ce;
+  --color-text-subtle: #8b8b96;
+
+  /* Button Colors - Primary (Neon Green) */
+  --btn-primary: #6eff00;       /* Exact neon green */
+  --btn-primary-hover: #5cd400;
+  --btn-primary-active: #4ab300;
+  --btn-primary-text: #000000;  /* Black text for bright green background */
+  --btn-primary-highlight: #9fff4d;
+
+  /* Button Colors - Secondary (Neon Purple) */
+  --btn-secondary: #7f00ff;     /* Exact neon purple */
+  --btn-secondary-hover: #9933ff;
+  --btn-secondary-active: #b366ff;
+  --btn-secondary-text: #ffffff;  /* White text for purple */
+  --btn-secondary-highlight: #cc99ff;
+
+  /* Button Colors - Default/Neutral */
+  --btn-default: #2c2c39;
+  --btn-default-hover: #3a3a4a;
+  --btn-default-active: #4a4a5a;
+  --btn-default-text: #ffffff;  /* White text for dark gray */
+
+  /* Button Colors - Success */
+  --btn-success: #6eff00;       /* Same as neon green for consistency */
+  --btn-success-hover: #5cd400;
+  --btn-success-active: #4ab300;
+  --btn-success-text: #000000;  /* Black text for bright green */
+  --btn-success-highlight: #4dffaa;
+
+  /* Button Colors - Error */
+  --btn-error: var(--color-error);
+  --btn-error-hover: #ff3333;
+  --btn-error-active: #ff5252;
+  --btn-error-text: #ffffff;  /* White text for red */
+  --btn-error-highlight: #ff7070;
+
+  /* Button Colors - Ghost */
+  --btn-ghost: transparent;
+  --btn-ghost-hover: rgba(110, 255, 0, 0.15);
+  --btn-ghost-active: rgba(110, 255, 0, 0.25);
+  --btn-ghost-text: #6eff00;  /* Neon green text for visibility on dark bg */
+  --btn-ghost-border: #6eff00;  /* Neon green border for visibility */
+
+  /* Card Colors */
+  --card-bg: #121320;
+  --card-bg-hover: #1a1a2e;
+  --card-bg-active: #2c2c39;
+  --card-border: #2c2c39;
+  --card-border-hover: #3a3a4a;
+  --card-shadow: var(--shadow);
+  --card-shadow-hover: var(--shadow-lg);
+
+  /* Card Highlights */
+  --card-highlight-primary: rgba(110, 255, 0, 0.1);   /* Neon green tint */
+  --card-highlight-secondary: rgba(127, 0, 255, 0.1); /* Purple tint */
+  --card-highlight-success: rgba(0, 255, 136, 0.1);   /* Success tint */
+  --card-highlight-error: rgba(255, 20, 20, 0.1);     /* Error tint */
+
+  /* Typography */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --text-base: 16px;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+
+  /* Layout */
+  --radius-sm: 0.375rem;
+  --radius: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  
+  --container-width: 1200px;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Elevation / Shadows - Dark theme optimized */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.6);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.8);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.9);
+  
+  /* Neon glow effects for accents */
+  --glow-accent1: 0 0 10px rgba(110, 255, 0, 0.5);
+  --glow-accent2: 0 0 10px rgba(127, 0, 255, 0.5);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition: 250ms ease;
+  --transition-slow: 350ms ease;
+}
+
+/* Light Mode (Optional - if you want a light variant) */
+.light {
+  /* Brand Colors - Light theme with complementary pastels */
+  --color-primary: #f0f9ff;     /* Very light blue background */
+  --color-secondary: #faf5ff;   /* Very light purple surface */
+  --color-accent1: #22c55e;     /* Softer green (still vibrant) */
+  --color-accent2: #8b5cf6;     /* Softer purple */
+  --color-success: #10b981;     /* Emerald green */
+  --color-warning: #f59e0b;     /* Amber */
+  --color-error: #ef4444;       /* Red */
+  
+  /* Base UI Colors */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-surface-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+
+  /* Button Colors - Primary (Green) */
+  --btn-primary: #22c55e;       /* Green-500 */
+  --btn-primary-hover: #16a34a; /* Green-600 */
+  --btn-primary-active: #15803d;/* Green-700 */
+  --btn-primary-text: #ffffff;
+  --btn-primary-highlight: #86efac; /* Green-300 */
+
+  /* Button Colors - Secondary (Purple) */
+  --btn-secondary: #8b5cf6;     /* Violet-500 */
+  --btn-secondary-hover: #7c3aed; /* Violet-600 */
+  --btn-secondary-active: #6d28d9;/* Violet-700 */
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-highlight: #c4b5fd; /* Violet-300 */
+
+  /* Button Colors - Default/Neutral */
+  --btn-default: #f1f5f9;       /* Slate-100 */
+  --btn-default-hover: #e2e8f0; /* Slate-200 */
+  --btn-default-active: #cbd5e1;/* Slate-300 */
+  --btn-default-text: #0f172a;
+
+  /* Button Colors - Success */
+  --btn-success: #10b981;       /* Emerald-500 */
+  --btn-success-hover: #059669; /* Emerald-600 */
+  --btn-success-active: #047857;/* Emerald-700 */
+  --btn-success-text: #ffffff;
+  --btn-success-highlight: #6ee7b7; /* Emerald-300 */
+
+  /* Button Colors - Error */
+  --btn-error: #ef4444;         /* Red-500 */
+  --btn-error-hover: #dc2626;   /* Red-600 */
+  --btn-error-active: #b91c1c;  /* Red-700 */
+  --btn-error-text: #ffffff;
+  --btn-error-highlight: #fca5a5; /* Red-300 */
+
+  /* Button Colors - Ghost */
+  --btn-ghost: transparent;
+  --btn-ghost-hover: rgba(34, 197, 94, 0.15);  /* Light green tint */
+  --btn-ghost-active: rgba(34, 197, 94, 0.25);
+  --btn-ghost-text: #22c55e;  /* Green text for visibility */
+  --btn-ghost-border: #22c55e;  /* Green border for visibility */
+
+  /* Card Colors */
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8fafc;
+  --card-bg-active: #f1f5f9;
+  --card-border: #e2e8f0;
+  --card-border-hover: #cbd5e1;
+  --card-shadow: var(--shadow);
+  --card-shadow-hover: var(--shadow-lg);
+
+  /* Card Highlights */
+  --card-highlight-primary: #dcfce7;   /* Green-100 */
+  --card-highlight-secondary: #ede9fe; /* Violet-100 */
+  --card-highlight-success: #d1fae5;   /* Emerald-100 */
+  --card-highlight-error: #fee2e2;     /* Red-100 */
+
+  /* Shadows - Light theme */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.15);
+  
+  /* Glow effects for light mode (subtle) */
+  --glow-accent1: 0 0 20px rgba(34, 197, 94, 0.3);
+  --glow-accent2: 0 0 20px rgba(139, 92, 246, 0.3);
+}
