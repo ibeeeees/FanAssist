@@ -51,70 +51,21 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ selectedCategory, onCat
   return (
     <div className="mb-4">
       {/* Row 1 */}
-      <div className="flex gap-2 mb-2">
-        {categories.slice(0, 9).map((category) => (
+      <div className="flex gap-1 mb-2 flex-wrap">
+        {categories.map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
+            className={`category-button rounded-full ${selectedCategory === category.name ? 'active' : ''}`}
           >
-            {category.icon && <span className="mr-1">{category.icon}</span>}
+            {category.icon && <span className="mr-[0.5px]">{category.icon}</span>}
             {category.name}
           </button>
         ))}
       </div>
 
-      {/* Row 2 */}
-      <div className="flex gap-2 mb-2">
-        {categories.slice(9, 16).map((category) => (
-          <button
-            key={category.name}
-            onClick={() => onCategoryChange(category.name)}
-            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
+      <div className="w-full border-2 border-card-border"></div>
 
-      {/* Row 3 */}
-      <div className="flex gap-2 mb-2">
-        {categories.slice(16, 24).map((category) => (
-          <button
-            key={category.name}
-            onClick={() => onCategoryChange(category.name)}
-            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Row 4 */}
-      <div className="flex gap-2 mb-2">
-        {categories.slice(24, 31).map((category) => (
-          <button
-            key={category.name}
-            onClick={() => onCategoryChange(category.name)}
-            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Row 5 */}
-      <div className="flex gap-2">
-        {categories.slice(31).map((category) => (
-          <button
-            key={category.name}
-            onClick={() => onCategoryChange(category.name)}
-            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
-          >
-            {category.name}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

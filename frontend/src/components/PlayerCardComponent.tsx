@@ -152,7 +152,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
   return (
     <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden hover:border-card-border-hover hover:shadow-card-shadow-hover transition-all duration-200 flex flex-col h-[250px] w-[250px] justify-center">
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-0.5 overflow-hidden">
+        <div className=" flex flex-col items-center justify-center p-4 gap-0.5 overflow-hidden">
             {/* Icon */}
             <div className="w-2 h-2 rounded-full bg-accent1 shrink-0"></div>
 
@@ -162,7 +162,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             </div>
 
             {/* Name */}
-            <div className="">{name}</div>
+            <div className="font-light text-lg">{name}</div>
 
             {/* Game Info */}
             <div className="flex flex-col text-center shrink-0 w-full px-2 align-center justify-center">
@@ -177,7 +177,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             {/* Stat Projection */}
             <div className="flex flex-row text-center shrink-0 gap-0.5">
 
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-normal">
                     {statValue.toFixed(1)}
                 </div>
 
