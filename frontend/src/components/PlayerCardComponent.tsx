@@ -1,4 +1,7 @@
 import React, { useState } from 'react'
+// import icons from lucide-react
+import { ArrowUp, ArrowDown } from 'lucide-react';
+ 
 
 interface PlayerProjections {
   points: number;
@@ -54,9 +57,18 @@ interface Player {
   injuryStatus: string | null;
 }
 
+interface SelectedPlayer {
+  playerId: string;
+  playerName: string;
+  category: string;
+  selection: 'more' | 'less';
+  statValue: number;
+}
+
 interface PlayerCardProps {
   player: Player;
   selectedCategory?: string;
+  setSelectedPlayers: React.Dispatch<React.SetStateAction<SelectedPlayer[]>>;
 }
 
 const categoryMap: Record<string, { key: keyof PlayerProjections; label: string }> = {
@@ -96,7 +108,7 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
   'Two Pointers Made': { key: 'twoPointersMade', label: '2-PT Made' },
 };
 
-const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular' }) => {
+const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
 
   const {
@@ -116,27 +128,44 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     // If clicking the same button, deselect it
     if (selection === type) {
       setSelection(null);
+      // Remove player from selectedPlayers
+      setSelectedPlayers(prev => prev.filter(p => p.playerId !== player.id));
     } else {
       // Otherwise, select the clicked button
       setSelection(type);
+      // Add or update player in selectedPlayers
+      setSelectedPlayers(prev => {
+        // Remove existing entry if it exists
+        const filtered = prev.filter(p => p.playerId !== player.id);
+        // Add new entry
+        return [...filtered, {
+          playerId: player.id,
+          playerName: name,
+          category: selectedCategory,
+          selection: type,
+          statValue: statValue
+        }];
+      });
     }
   };
 
   return (
     <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden hover:border-card-border-hover hover:shadow-card-shadow-hover transition-all duration-200 flex flex-col h-[250px] w-[250px] justify-center">
-      {/* Main Content Area */}
-        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-1 overflow-hidden">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col items-center justify-center p-4 gap-0.5 overflow-hidden">
             {/* Icon */}
             <div className="w-2 h-2 rounded-full bg-accent1 shrink-0"></div>
 
             {/* Position */}
             <div className="text-xs font-semibold text-text-muted shrink-0">
-                {position.join(', ')}
+                {position.join(' - ')}
             </div>
 
-            {/* Name, Game Info */}
-            <div className="flex flex-row text-center shrink-0 max-w-full px-2 align-center justify-center">
-                <div className="font-semibold text-text text-sm mb-1 truncate">{name}</div>
+            {/* Name */}
+            <div className="">{name}</div>
+
+            {/* Game Info */}
+            <div className="flex flex-col text-center shrink-0 w-full px-2 align-center justify-center">
                 <div className="text-xs text-text-muted leading-tight">
                     {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
                 </div>
@@ -146,11 +175,14 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             </div>
 
             {/* Stat Projection */}
-            <div className="text-center shrink-0">
-            <div className="text-4xl font-bold leading-none" style={{ color: 'var(--color-accent1)' }}>
-                {statValue.toFixed(1)}
-            </div>
-            <div className="text-xs text-text-muted mt-1 leading-tight">{category.label}</div>
+            <div className="flex flex-row text-center shrink-0 gap-0.5">
+
+                <div className="text-2xl font-bold">
+                    {statValue.toFixed(1)}
+                </div>
+
+                <div className="text-xs text-text-muted mt-1 leading-tight">{category.label}</div>
+
             </div>
         </div>
 
@@ -160,13 +192,13 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 onClick={() => handleButtonClick('less')}
                 className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''}`}
             >
-                Less
+                <ArrowDown size={16} className="inline-block mr-[5px]" /> Less
             </button>
             <button 
                 onClick={() => handleButtonClick('more')}
                 className={`selection-button ${selection === 'more' ? 'active' : ''}`}
             >
-                More
+                <ArrowUp size={16} className="inline-block mr-[5px]" /> More
             </button>
         </div>
     </div>

@@ -1,14 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { useTheme } from './context/ThemeContext'
 import CategoryFilter from './components/CategoryFilter'
 import PlayerCardComponent from './components/PlayerCardComponent'
 import playersData from './data/players.json'
 
+interface SelectedPlayer {
+  playerId: string;
+  playerName: string;
+  category: string;
+  selection: 'more' | 'less';
+  statValue: number;
+}
+
 function App() {
   const [showShowcase, setShowShowcase] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('Popular')
   const { theme, toggleTheme } = useTheme()
+  const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayer[]>([])
+
+  // Load selected players from localStorage on mount
+  useEffect(() => {
+    const savedPlayers = localStorage.getItem('selectedPlayers')
+    if (savedPlayers) {
+      try {
+        setSelectedPlayers(JSON.parse(savedPlayers))
+      } catch (error) {
+        console.error('Failed to load selected players:', error)
+      }
+    }
+  }, [])
+
+  // Save selected players to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('selectedPlayers', JSON.stringify(selectedPlayers))
+  }, [selectedPlayers])
 
 
   return (
@@ -29,18 +55,6 @@ function App() {
               onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-default)'}
             >
               {theme === 'dark' ? '🌙 Dark' : '☀️ Light'} Mode
-            </button>
-            <button 
-              onClick={() => setShowShowcase(!showShowcase)}
-              className="px-4 py-2 rounded-lg font-semibold transition-all"
-              style={{
-                backgroundColor: 'var(--btn-secondary)',
-                color: 'var(--btn-secondary-text)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-secondary-hover)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-secondary)'}
-            >
-              {showShowcase ? 'Hide' : 'Show'} Showcase
             </button>
           </div>
         </div>
@@ -71,10 +85,53 @@ function App() {
               key={player.id} 
               player={player}
               selectedCategory={selectedCategory}
+              setSelectedPlayers={setSelectedPlayers}
             />
           ))}
         </div>
       </div>
+
+      {/* Selected Players Summary */}
+      {selectedPlayers.length > 0 && (
+        <div className="max-w-7xl mx-auto mt-8">
+          <div className="bg-surface p-6 rounded-lg border border-card-border">
+            <h2 className="text-2xl font-bold text-text mb-4">
+              Your Lineup ({selectedPlayers.length})
+            </h2>
+            <div className="space-y-2">
+              {selectedPlayers.map((sp, index) => (
+                <div 
+                  key={`${sp.playerId}-${index}`}
+                  className="flex items-center justify-between p-3 bg-card-bg rounded border border-card-border"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-semibold text-text">{sp.playerName}</span>
+                    <span className="text-text-muted text-sm">•</span>
+                    <span className="text-sm text-text-muted">{sp.category}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span 
+                      className="text-lg font-bold" 
+                      style={{ color: 'var(--color-accent1)' }}
+                    >
+                      {sp.statValue.toFixed(1)}
+                    </span>
+                    <span 
+                      className={`px-3 py-1 rounded text-sm font-semibold ${
+                        sp.selection === 'more' 
+                          ? 'bg-btn-success text-btn-success-text' 
+                          : 'bg-btn-error text-btn-error-text'
+                      }`}
+                    >
+                      {sp.selection === 'more' ? 'More' : 'Less'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )

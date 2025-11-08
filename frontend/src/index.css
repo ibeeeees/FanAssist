@@ -167,4 +167,34 @@ a:hover {
   .selection-button-left {
     border-right: 1px solid var(--card-border);
   }
+
+  /* Category filter buttons */
+  .category-button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s;
+    border-radius: 9999px;
+    border: 1px solid var(--card-border);
+    background-color: var(--surface);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  
+  .category-button:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--card-border-hover);
+    color: var(--text);
+  }
+  
+  .category-button.active {
+    background-color: var(--btn-default);
+    border-color: var(--card-border-hover);
+    color: var(--btn-default-text);
+  }
+  
+  .category-button.active:hover {
+    opacity: 0.95;
+  }
 }

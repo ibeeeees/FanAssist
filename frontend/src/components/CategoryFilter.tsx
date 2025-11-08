@@ -49,38 +49,28 @@ const categories = [
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ selectedCategory, onCategoryChange }) => {
   return (
-    <div className="mb-6 overflow-x-auto">
+    <div className="mb-4">
       {/* Row 1 */}
-      <div className="flex gap-3 mb-3 pb-2">
+      <div className="flex gap-2 mb-2">
         {categories.slice(0, 9).map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex items-center gap-2"
-            style={{
-              backgroundColor: selectedCategory === category.name ? 'var(--btn-default)' : 'var(--surface)',
-              color: selectedCategory === category.name ? 'var(--btn-default-text)' : 'var(--text-muted)',
-              border: `1px solid ${selectedCategory === category.name ? 'var(--card-border-hover)' : 'var(--card-border)'}`,
-            }}
+            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
           >
-            {category.icon && <span>{category.icon}</span>}
+            {category.icon && <span className="mr-1">{category.icon}</span>}
             {category.name}
           </button>
         ))}
       </div>
 
       {/* Row 2 */}
-      <div className="flex gap-3 mb-3 pb-2">
+      <div className="flex gap-2 mb-2">
         {categories.slice(9, 16).map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all"
-            style={{
-              backgroundColor: selectedCategory === category.name ? 'var(--btn-default)' : 'var(--surface)',
-              color: selectedCategory === category.name ? 'var(--btn-default-text)' : 'var(--text-muted)',
-              border: `1px solid ${selectedCategory === category.name ? 'var(--card-border-hover)' : 'var(--card-border)'}`,
-            }}
+            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
           >
             {category.name}
           </button>
@@ -88,17 +78,12 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ selectedCategory, onCat
       </div>
 
       {/* Row 3 */}
-      <div className="flex gap-3 mb-3 pb-2">
+      <div className="flex gap-2 mb-2">
         {categories.slice(16, 24).map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all"
-            style={{
-              backgroundColor: selectedCategory === category.name ? 'var(--btn-default)' : 'var(--surface)',
-              color: selectedCategory === category.name ? 'var(--btn-default-text)' : 'var(--text-muted)',
-              border: `1px solid ${selectedCategory === category.name ? 'var(--card-border-hover)' : 'var(--card-border)'}`,
-            }}
+            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
           >
             {category.name}
           </button>
@@ -106,17 +91,12 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ selectedCategory, onCat
       </div>
 
       {/* Row 4 */}
-      <div className="flex gap-3 mb-3 pb-2">
+      <div className="flex gap-2 mb-2">
         {categories.slice(24, 31).map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all"
-            style={{
-              backgroundColor: selectedCategory === category.name ? 'var(--btn-default)' : 'var(--surface)',
-              color: selectedCategory === category.name ? 'var(--btn-default-text)' : 'var(--text-muted)',
-              border: `1px solid ${selectedCategory === category.name ? 'var(--card-border-hover)' : 'var(--card-border)'}`,
-            }}
+            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
           >
             {category.name}
           </button>
@@ -124,17 +104,12 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({ selectedCategory, onCat
       </div>
 
       {/* Row 5 */}
-      <div className="flex gap-3 pb-2">
+      <div className="flex gap-2">
         {categories.slice(31).map((category) => (
           <button
             key={category.name}
             onClick={() => onCategoryChange(category.name)}
-            className="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all"
-            style={{
-              backgroundColor: selectedCategory === category.name ? 'var(--btn-default)' : 'var(--surface)',
-              color: selectedCategory === category.name ? 'var(--btn-default-text)' : 'var(--text-muted)',
-              border: `1px solid ${selectedCategory === category.name ? 'var(--card-border-hover)' : 'var(--card-border)'}`,
-            }}
+            className={`category-button ${selectedCategory === category.name ? 'active' : ''}`}
           >
             {category.name}
           </button>
