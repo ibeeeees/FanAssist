@@ -3,6 +3,7 @@ import './App.css'
 import { useTheme } from './context/ThemeContext'
 import CategoryFilter from './components/CategoryFilter'
 import PlayerCardComponent from './components/PlayerCardComponent'
+import { ScrollTriggeredAnimation } from './components/ScrollTriggeredAnimation'
 import playersData from './data/players.json'
 
 interface SelectedPlayer {
@@ -14,7 +15,6 @@ interface SelectedPlayer {
 }
 
 function App() {
-  const [showShowcase, setShowShowcase] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState('Popular')
   const { theme, toggleTheme } = useTheme()
   const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayer[]>([])
@@ -80,13 +80,19 @@ function App() {
       {/* Player Cards Grid */}
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {playersData.players.map((player) => (
-            <PlayerCardComponent 
-              key={player.id} 
-              player={player}
-              selectedCategory={selectedCategory}
-              setSelectedPlayers={setSelectedPlayers}
-            />
+          {playersData.players.map((player, index) => (
+            <ScrollTriggeredAnimation
+              key={player.id}
+              delay={index * 0.05}
+              duration={0.5}
+              fallDistance={30}
+            >
+              <PlayerCardComponent
+                player={player}
+                selectedCategory={selectedCategory}
+                setSelectedPlayers={setSelectedPlayers}
+              />
+            </ScrollTriggeredAnimation>
           ))}
         </div>
       </div>
