@@ -139,6 +139,14 @@ a:hover {
 
 /* Custom utility for selection buttons */
 @layer utilities {
+  .player-card {
+    @apply bg-card-bg border border-card-border rounded-lg overflow-hidden  hover:border-card-border-hover hover:shadow-card-shadow-hover transition-all duration-200 flex flex-col h-[250px] w-[250px] justify-center 
+  }
+
+  .player-card.active {
+    @apply border-accent1;
+  }
+
   .selection-button {
     flex: 1;
     padding-top: 0.75rem;

@@ -150,11 +150,11 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
   };
 
   return (
-    <div className="bg-card-bg border border-card-border rounded-lg overflow-hidden hover:border-card-border-hover hover:shadow-card-shadow-hover transition-all duration-200 flex flex-col h-[250px] w-[250px] justify-center">
+    <div className={`player-card ${selection ? 'active' : ''}`}>
         {/* Main Content Area */}
-        <div className=" flex flex-col items-center justify-center p-4 gap-0.5 overflow-hidden">
+        <div className="flex flex-col items-center justify-center p-1 overflow-hidden grow">
             {/* Icon */}
-            <div className="w-2 h-2 rounded-full bg-accent1 shrink-0"></div>
+            <div className="w-2 h-2 rounded-full bg-accent1 shrink-0 mb-1"></div>
 
             {/* Position */}
             <div className="text-xs font-semibold text-text-muted shrink-0">
@@ -165,7 +165,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             <div className="font-light text-lg">{name}</div>
 
             {/* Game Info */}
-            <div className="flex flex-col text-center shrink-0 w-full px-2 align-center justify-center">
+            <div className="flex flex-col text-center shrink-0 w-full align-center justify-center">
                 <div className="text-xs text-text-muted leading-tight">
                     {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
                 </div>
@@ -175,19 +175,16 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             </div>
 
             {/* Stat Projection */}
-            <div className="flex flex-row text-center shrink-0 gap-0.5">
-
+            <div className="flex flex-row items-baseline text-center shrink-0 gap-0.5">
                 <div className="text-2xl font-normal">
                     {statValue.toFixed(1)}
                 </div>
-
-                <div className="text-xs text-text-muted mt-1 leading-tight">{category.label}</div>
-
+                <div className="text-xs text-text-muted">{category.label}</div>
             </div>
         </div>
 
         {/* Bottom Buttons */}
-        <div className="flex shrink-0">
+        <div className="flex mt-auto">
             <button 
                 onClick={() => handleButtonClick('less')}
                 className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''}`}
@@ -205,14 +202,5 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
   )
 }
 
-// Helper component for stat items
-const StatItem: React.FC<{ label: string; value: number }> = ({ label, value }) => (
-  <div className="text-center p-2 rounded bg-surface-hover">
-    <div className="text-xs text-text-muted mb-1">{label}</div>
-    <div className="text-xl font-bold" style={{ color: 'var(--color-accent1)' }}>
-      {value.toFixed(1)}
-    </div>
-  </div>
-);
 
 export default PlayerCardComponent
