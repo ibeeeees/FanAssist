@@ -1,0 +1,241 @@
+@import "tailwindcss";
+@import "./styles/variables.css";
+
+/* Custom light variant: applies when element is descendant of .light */
+@custom-variant light (&:is(.light *));
+
+/* Tailwind v4 @theme - define tokens inline using CSS variables */
+@theme {
+  /* Brand colors mapped to CSS variables */
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent1: var(--color-accent1);
+  --color-accent2: var(--color-accent2);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-border: var(--color-border);
+  
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-text-subtle: var(--color-text-subtle);
+
+  /* Button colors - all states */
+  --color-btn-default: var(--btn-default);
+  --color-btn-default-hover: var(--btn-default-hover);
+  --color-btn-default-active: var(--btn-default-active);
+  --color-btn-default-text: var(--btn-default-text);
+
+  --color-btn-primary: var(--btn-primary);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-primary-active: var(--btn-primary-active);
+  --color-btn-primary-text: var(--btn-primary-text);
+  --color-btn-primary-highlight: var(--btn-primary-highlight);
+
+  --color-btn-secondary: var(--btn-secondary);
+  --color-btn-secondary-hover: var(--btn-secondary-hover);
+  --color-btn-secondary-active: var(--btn-secondary-active);
+  --color-btn-secondary-text: var(--btn-secondary-text);
+  --color-btn-secondary-highlight: var(--btn-secondary-highlight);
+
+  --color-btn-success: var(--btn-success);
+  --color-btn-success-hover: var(--btn-success-hover);
+  --color-btn-success-active: var(--btn-success-active);
+  --color-btn-success-text: var(--btn-success-text);
+  --color-btn-success-highlight: var(--btn-success-highlight);
+
+  --color-btn-error: var(--btn-error);
+  --color-btn-error-hover: var(--btn-error-hover);
+  --color-btn-error-active: var(--btn-error-active);
+  --color-btn-error-text: var(--btn-error-text);
+  --color-btn-error-highlight: var(--btn-error-highlight);
+
+  --color-btn-ghost: var(--btn-ghost);
+  --color-btn-ghost-hover: var(--btn-ghost-hover);
+  --color-btn-ghost-active: var(--btn-ghost-active);
+  --color-btn-ghost-text: var(--btn-ghost-text);
+  --color-btn-ghost-border: var(--btn-ghost-border);
+
+  /* Card colors */
+  --color-card-bg: var(--card-bg);
+  --color-card-bg-hover: var(--card-bg-hover);
+  --color-card-bg-active: var(--card-bg-active);
+  --color-card-border: var(--card-border);
+  --color-card-border-hover: var(--card-border-hover);
+  --color-card-shadow: var(--card-shadow);
+  --color-card-shadow-hover: var(--card-shadow-hover);
+
+  --color-card-highlight-primary: var(--card-highlight-primary);
+  --color-card-highlight-secondary: var(--card-highlight-secondary);
+  --color-card-highlight-success: var(--card-highlight-success);
+  --color-card-highlight-error: var(--card-highlight-error);
+
+  /* Border radius */
+  --radius-sm: var(--radius-sm);
+  --radius: var(--radius);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Spacing */
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing: var(--spacing);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
+
+  /* Shadows */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+
+  /* Fonts */
+  --font-family-sans: var(--font-sans);
+  --font-family-mono: var(--font-mono);
+}
+
+/* Base styles */
+:root {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  transition: background-color var(--transition), color var(--transition);
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  font-weight: 500;
+  color: var(--color-primary);
+  text-decoration: inherit;
+  transition: color var(--transition-fast);
+}
+a:hover {
+  opacity: 0.8;
+}
+
+/* Custom utility for selection buttons */
+@layer utilities {
+  .player-card {
+    @apply bg-card-bg border border-card-border rounded-lg overflow-hidden  hover:border-card-border-hover hover:shadow-card-shadow-hover transition-all duration-200 flex flex-col h-[250px] w-[250px] justify-center 
+  }
+
+  .player-card.active {
+    @apply border-accent1;
+  }
+
+  .selection-button {
+    flex: 1;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border-top: 1px solid var(--card-border);
+    background-color: var(--surface);
+    color: var(--text);
+  }
+  
+  .selection-button:hover {
+    background-color: var(--surface-hover);
+  }
+  
+  .selection-button.active {
+    background-color: var(--color-accent1);
+    color: #000000;
+  }
+  
+  .selection-button.active:hover {
+    opacity: 0.9;
+  }
+  
+  .selection-button-left {
+    border-right: 1px solid var(--card-border);
+  }
+
+  /* Category filter buttons */
+  .category-button {
+    padding: 5px 12px;
+    font-size: 15px;
+    font-weight: 300;
+    white-space: nowrap;
+    transition: all 0.2s;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-border);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  
+  .category-button:hover {
+    background-color: var(--surface-hover);
+    border-color: var(--card-border-hover);
+    color: var(--text);
+  }
+  
+  .category-button.active {
+    background-color: var(--btn-default);
+    border-color: var(--color-white);
+    border-width: 2px;
+    color: var(--btn-default-text);
+  }
+  
+  .category-button.active:hover {
+    opacity: 0.95;
+  }
+
+  .theme-toggle {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 2px solid transparent;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+  }
+
+  .theme-toggle:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .theme-toggle.light {
+    background-color: var(--color-accent2) !important;
+    border-color: var(--color-accent2) !important;
+    color: #000000 !important;
+  }
+
+  .theme-toggle.dark {
+    background-color: var(--color-accent2) !important;
+    border-color: var(--color-accent2) !important;
+    color: var(--color-white) !important;
+  }
+}

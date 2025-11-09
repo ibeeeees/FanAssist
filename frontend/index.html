@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fanassit</title>
+    
+    <!-- Prevent FOUC: Apply theme & settings before React loads -->
+    <script>
+      (function() {
+        try {
+          // Apply theme (default is dark, so only add .light class if needed)
+          const theme = localStorage.getItem('fanassist:theme');
+          if (theme === 'light') {
+            document.documentElement.classList.add('light');
+          }
+
+          // Apply custom settings (CSS variables)
+          const settings = JSON.parse(localStorage.getItem('fanassist:settings') || '{}');
+          Object.entries(settings).forEach(([key, value]) => {
+            if (!value) return;
+            const cssVar = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
+            document.documentElement.style.setProperty(cssVar, value);
+          });
+        } catch (e) {
+          // Silently fail - React will handle it
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
