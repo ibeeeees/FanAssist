@@ -39,9 +39,9 @@ function App() {
 
 
   return (
-    <div className="min-h-screen bg-bg p-6">
+    <div className="min-h-screen bg-bg p-3">
       {/* Header */}
-      <div className="max-w-7xl mx-auto mb-8">
+      <div className="max-w-7xl mx-auto mb-3">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-bold text-text">FanAssist</h1>
           <div className="flex items-center gap-4">
@@ -61,7 +61,7 @@ function App() {
         </div>
 
         {/* Player Count */}
-        <div className="flex items-center gap-4 text-text-muted">
+        <div className="flex items-center gap-1 text-text-muted">
           <span className="text-sm">
             {playersData.players.length} Players Available
           </span>
@@ -71,7 +71,7 @@ function App() {
       </div>
 
       {/* Category Filter */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl">
         <CategoryFilter 
           selectedCategory={selectedCategory}
           onCategoryChange={setSelectedCategory}
@@ -83,7 +83,7 @@ function App() {
         {/* Welcome Popup */}
         <WelcomePopup triggerDelay={2000} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="flex flex-wrap justify-center gap-1">
           {playersData.players.map((player, index) => (
             <ScrollTriggeredAnimation
               key={player.id}
