@@ -15,17 +15,19 @@ export const WelcomePopup = ({
   onClose,
   triggerDelay = 2000,
 }: WelcomePopupProps) => {
-  const [isVisible, setIsVisible] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const elementRef = useRef<HTMLDivElement>(null);
+  const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
+    const currentElement = elementRef.current;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Only trigger once when element comes into view
-          if (entry.isIntersecting && !isVisible) {
-            setIsVisible(true);
+          // Only trigger once when element comes into view and hasn't been triggered before
+          if (entry.isIntersecting && !hasTriggeredRef.current) {
+            hasTriggeredRef.current = true;
             // Show popup after delay
             setTimeout(() => {
               setShowPopup(true);
@@ -39,16 +41,16 @@ export const WelcomePopup = ({
       }
     );
 
-    if (elementRef.current) {
-      observer.observe(elementRef.current);
+    if (currentElement) {
+      observer.observe(currentElement);
     }
 
     return () => {
-      if (elementRef.current) {
-        observer.unobserve(elementRef.current);
+      if (currentElement) {
+        observer.unobserve(currentElement);
       }
     };
-  }, [isVisible, triggerDelay]);
+  }, [triggerDelay]);
 
   const handleClose = () => {
     setShowPopup(false);
