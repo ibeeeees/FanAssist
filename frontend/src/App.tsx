@@ -104,7 +104,7 @@ function App() {
         {/* Right Side */}
         <div className="">
           {/* Selected Players Summary */}
-          <SelectedPlayersSummary 
+          <SelectedPlayersSummary
             selectedPlayers={selectedPlayers}
             setSelectedPlayers={setSelectedPlayers}
           />

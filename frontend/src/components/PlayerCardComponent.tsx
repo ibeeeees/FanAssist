@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowUp, ArrowDown } from 'lucide-react'
+import { PlayerStatsModal } from './PlayerStatsModal'
 import type { SelectedPlayer } from '../types'
 
 interface PlayerProjections {
@@ -102,6 +103,7 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
@@ -158,8 +160,17 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open modal if clicking on buttons
+    if ((e.target as HTMLElement).closest('.selection-button')) {
+      return;
+    }
+    setIsModalOpen(true);
+  };
+
   return (
-    <div className={`player-card ${selection ? 'active' : ''}`}>
+    <>
+      <div className={`player-card ${selection ? 'active' : ''}`} onClick={handleCardClick} style={{ cursor: 'pointer' }}>
         {/* Main Content Area */}
         <div className="flex flex-col items-center justify-center p-1 overflow-hidden grow">
             {/* Icon */}
@@ -207,7 +218,17 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 <ArrowUp size={16} className="inline-block mr-[5px]" /> More
             </button>
         </div>
-    </div>
+      </div>
+
+      {/* Player Stats Modal */}
+      <PlayerStatsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        playerName={name}
+        category={category.label}
+        propLine={statValue}
+      />
+    </>
   )
 }
 
