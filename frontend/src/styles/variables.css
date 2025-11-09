@@ -121,8 +121,8 @@
   /* Brand Colors - Light theme with complementary pastels */
   --color-primary: #f0f9ff;     /* Very light blue background */
   --color-secondary: #faf5ff;   /* Very light purple surface */
-  --color-accent1: #22c55e;     /* Softer green (still vibrant) */
-  --color-accent2: #8b5cf6;     /* Softer purple */
+  --color-accent1: #7f00ff;     /* Softer green (still vibrant) */
+  --color-accent2: #6eff00;     /* Softer purple */
   --color-success: #10b981;     /* Emerald green */
   --color-warning: #f59e0b;     /* Amber */
   --color-error: #ef4444;       /* Red */
