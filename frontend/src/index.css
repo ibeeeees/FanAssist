@@ -147,6 +147,16 @@ a:hover {
     @apply border-accent1;
   }
 
+  .player-card.demon-active {
+    @apply border-red-600 shadow-lg;
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+  }
+
+  .player-card.goblin-active {
+    @apply border-green-600 shadow-lg;
+    box-shadow: 0 0 15px rgba(22, 163, 74, 0.3);
+  }
+
   .selection-button {
     flex: 1;
     padding-top: 0.75rem;

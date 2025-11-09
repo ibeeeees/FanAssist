@@ -6,9 +6,32 @@ import PlayerCardComponent from './components/PlayerCardComponent'
 import { ScrollTriggeredAnimation } from './components/ScrollTriggeredAnimation'
 import { WelcomePopup } from './components/WelcomePopup'
 import SelectedPlayersSummary from './components/SelectedPlayersSummary'
-import playersData from './data/players.json'
+import playersDataRaw from './data/players.json'
 import { Sun, Moon } from 'lucide-react'
 import type { SelectedPlayer } from './types'
+
+// Type assertion for players data
+interface PlayerData {
+  id: string;
+  name: string;
+  image: string;
+  team: string;
+  teamAbbr: string;
+  position: string[];
+  gameLocation: string;
+  opponent: string;
+  opponentAbbr: string;
+  gameDay: string;
+  gameTime: string;
+  gameDate: string;
+  projections: any; // Using any to match JSON import
+  specialModifier?: 'demon' | 'goblin';
+  modifierMultiplier?: number;
+  isInjured: boolean;
+  injuryStatus: string | null;
+}
+
+const playersData = playersDataRaw as { players: PlayerData[] };
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState('Popular')

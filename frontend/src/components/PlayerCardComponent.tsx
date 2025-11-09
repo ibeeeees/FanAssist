@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowUp, ArrowDown } from 'lucide-react'
+import { ArrowUp, ArrowDown, ArrowLeftRight } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
 
 interface PlayerProjections {
@@ -52,6 +52,8 @@ interface Player {
   gameTime: string;
   gameDate: string;
   projections: PlayerProjections;
+  specialModifier?: 'demon' | 'goblin'; // Fixed modifier type (either demon OR goblin)
+  modifierMultiplier?: number; // How much to add/subtract from projections
   isInjured: boolean;
   injuryStatus: string | null;
 }
@@ -102,16 +104,19 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
+  const [modifierActive, setModifierActive] = useState<boolean>(false);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
     const selectedPlayer = selectedPlayers.find(p => p.playerId === player.id);
     if (selectedPlayer) {
       setSelection(selectedPlayer.selection);
+      setModifierActive(selectedPlayer.modifier === player.specialModifier);
     } else {
       setSelection(null);
+      setModifierActive(false);
     }
-  }, [selectedPlayers, player.id]);
+  }, [selectedPlayers, player.id, player.specialModifier]);
 
   const {
     name,
@@ -121,15 +126,64 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     opponentAbbr,
     gameTime,
     projections,
+    specialModifier,
+    modifierMultiplier,
   } = player;
 
   const category = categoryMap[selectedCategory] || categoryMap['Popular'];
-  const statValue = projections[category.key] ?? projections.points ?? 0;
+  const baseStatValue = projections[category.key] ?? projections.points ?? 0;
+  
+  // Calculate modified stat value if modifier is active
+  const statValue = modifierActive && modifierMultiplier !== undefined
+    ? baseStatValue + modifierMultiplier
+    : baseStatValue;
+  
+  // Check if this player has a special modifier available
+  const hasSpecialModifier = specialModifier !== undefined && modifierMultiplier !== undefined;
+
+  const handleModifierToggle = () => {
+    // Toggle modifier on/off
+    const newModifierActive = !modifierActive;
+    setModifierActive(newModifierActive);
+    
+    // Update selectedPlayers if player is already selected
+    if (selection) {
+      const newStatValue = newModifierActive && modifierMultiplier !== undefined
+        ? baseStatValue + modifierMultiplier
+        : baseStatValue;
+      
+      setSelectedPlayers(prev => {
+        const filtered = prev.filter(p => p.playerId !== player.id);
+        return [...filtered, {
+          playerId: player.id,
+          image: player.image,
+          playerName: name,
+          teamAbbr: player.teamAbbr,
+          position: player.position,
+          gameLocation: player.gameLocation,
+          opponentAbbr: player.opponentAbbr,
+          gameDay: player.gameDay,
+          gameTime: player.gameTime,
+          category: selectedCategory,
+          selection: selection,
+          statValue: newStatValue,
+          originalStatValue: baseStatValue,
+          modifier: newModifierActive ? specialModifier || null : null,
+        }];
+      });
+    }
+  };
 
   const handleButtonClick = (type: 'more' | 'less') => {
+    // Modifier picks can only be "MORE"
+    if (modifierActive && type === 'less') {
+      return; // Don't allow "less" for modifier picks
+    }
+    
     // If clicking the same button, deselect it
     if (selection === type) {
       setSelection(null);
+      setModifierActive(false); // Also clear modifier when deselecting
       // Remove player from selectedPlayers
       setSelectedPlayers(prev => prev.filter(p => p.playerId !== player.id));
     } else {
@@ -152,60 +206,112 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
           gameTime: player.gameTime,
           category: selectedCategory,
           selection: type,
-          statValue: statValue
+          statValue: statValue,
+          originalStatValue: baseStatValue,
+          modifier: modifierActive ? specialModifier || null : null,
         }];
       });
     }
   };
 
   return (
-    <div className={`player-card ${selection ? 'active' : ''}`}>
+    <div className={`player-card ${selection ? 'active' : ''} ${modifierActive && specialModifier === 'demon' ? 'demon-active' : modifierActive && specialModifier === 'goblin' ? 'goblin-active' : ''}`}>
         {/* Main Content Area */}
         <div className="flex flex-col items-center justify-center p-1 overflow-hidden grow">
-            {/* Icon */}
-            <div className="w-2 h-2 rounded-full bg-accent1 shrink-0 mb-1"></div>
 
-            {/* Position */}
-            <div className="text-xs font-semibold text-text-muted shrink-0">
-                {position.join(' - ')}
-            </div>
+          {/* Icon */}
+          <div className={`w-2 h-2 rounded-full shrink-0 mb-1 ${
+            modifierActive && specialModifier === 'demon' 
+              ? 'bg-red-600' 
+              : modifierActive && specialModifier === 'goblin' 
+              ? 'bg-green-600' 
+              : 'bg-accent1'
+          }`}></div>
 
-            {/* Name */}
-            <div className="font-light text-lg">{name}</div>
+          {/* Position */}
+          <div className="text-xs font-semibold text-text-muted shrink-0">
+              {position.join(' - ')}
+          </div>
 
-            {/* Game Info */}
-            <div className="flex flex-col text-center shrink-0 w-full align-center justify-center">
-                <div className="text-xs text-text-muted leading-tight">
-                    {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
-                </div>
-                <div className="text-xs text-text-muted">
-                    {gameTime}
-                </div>
-            </div>
+          {/* Name */}
+          <div className="font-light text-lg">{name}</div>
 
-            {/* Stat Projection */}
-            <div className="flex flex-row items-baseline text-center shrink-0 gap-0.5">
-                <div className="text-2xl font-normal">
-                    {statValue.toFixed(1)}
-                </div>
-                <div className="text-xs text-text-muted">{category.label}</div>
-            </div>
+          {/* Game Info */}
+          <div className="flex flex-col text-center shrink-0 w-full align-center justify-center">
+              <div className="text-xs text-text-muted leading-tight">
+                  {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
+              </div>
+              <div className="text-xs text-text-muted">
+                  {gameTime}
+              </div>
+          </div>
+
+          {/* Stat Projection */}
+          <div className="flex flex-row items-baseline text-center shrink-0 gap-0.5">
+
+              {/* Special Modifier Toggle Button */}
+              {hasSpecialModifier && (
+                <button
+                  onClick={handleModifierToggle}
+                  className={`flex items-center gap-1 text-[9px] p-0.5 mt-1 rounded-full font-bold transition-all ${
+                    modifierActive
+                      ? specialModifier === 'demon'
+                        ? 'bg-red-600 text-white shadow-sm border border-red-600'
+                        : 'bg-green-600 text-white shadow-sm border border-green-600'
+                      : specialModifier === 'demon'
+                      ? 'bg-card-bg text-text-muted border border-card-border hover:bg-red-600/10 hover:border-red-600 hover:text-red-600'
+                      : 'bg-card-bg text-text-muted border border-card-border hover:bg-green-600/10 hover:border-green-600 hover:text-green-600'
+                  }`}
+                  title={`Toggle ${specialModifier?.toUpperCase()}: ${modifierMultiplier && modifierMultiplier > 0 ? '+' : ''}${modifierMultiplier?.toFixed(1)} ${modifierActive ? '(Active)' : '(Inactive)'}`}
+                >
+                  <ArrowLeftRight size={12} />
+                </button>
+              )}
+              <div className={`text-2xl font-normal ${
+                modifierActive && specialModifier === 'demon' 
+                  ? 'text-red-500' 
+                  : modifierActive && specialModifier === 'goblin' 
+                  ? 'text-green-500' 
+                  : ''
+              }`}>
+                  {statValue.toFixed(1)}
+              </div>
+              <div className="text-xs text-text-muted">{category.label}</div>
+          </div>
         </div>
 
         {/* Bottom Buttons */}
         <div className="flex mt-auto">
-            <button 
-                onClick={() => handleButtonClick('less')}
-                className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''}`}
-            >
-                <ArrowDown size={16} className="inline-block mr-[5px]" /> Less
-            </button>
-            <button 
-                onClick={() => handleButtonClick('more')}
-                className={`selection-button ${selection === 'more' ? 'active' : ''}`}
-            >
-                <ArrowUp size={16} className="inline-block mr-[5px]" /> More
-            </button>
+          <button 
+            onClick={() => handleButtonClick('less')}
+            disabled={modifierActive}
+            className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''} ${
+              modifierActive ? 'opacity-40 cursor-not-allowed' : ''
+            }`}
+          >
+            <ArrowDown size={16} className="inline-block mr-[5px]" /> Less
+          </button>
+          <button 
+            onClick={() => handleButtonClick('more')}
+            className={`selection-button ${
+              selection === 'more' && modifierActive && specialModifier === 'demon'
+                ? 'bg-red-600 text-white border-red-600'
+                : selection === 'more' && modifierActive && specialModifier === 'goblin'
+                ? 'bg-green-600 text-white border-green-600'
+                : selection === 'more'
+                ? 'active'
+                : ''
+            }`}
+            style={
+              selection === 'more' && modifierActive
+                ? specialModifier === 'demon'
+                  ? { backgroundColor: 'rgb(220, 38, 38)', color: 'white' }
+                  : { backgroundColor: 'rgb(22, 163, 74)', color: 'white' }
+                : undefined
+            }
+          >
+            <ArrowUp size={16} className="inline-block mr-[5px]" /> More
+          </button>
         </div>
     </div>
   )

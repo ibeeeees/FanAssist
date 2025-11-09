@@ -43,7 +43,7 @@ export const WelcomePopup = ({
   // Lock/unlock scroll when popup is shown/hidden
   useEffect(() => {
     if (showPopup && currentStep !== 3) {
-      // Disable scrolling for steps 1 and 2
+      // Disable scrolling for steps 1, 2, and 4
       document.body.style.overflow = 'hidden';
     } else {
       // Enable scrolling for step 3 or when popup is closed
@@ -79,6 +79,9 @@ export const WelcomePopup = ({
       setTimeout(() => {
         setCurrentStep(3);
       }, 300);
+    } else if (currentStep === 3) {
+      // Move to step 4
+      setCurrentStep(4);
     }
   };
 
@@ -294,12 +297,115 @@ export const WelcomePopup = ({
                       The large number displays the projected value for the selected category
                     </li>
                     <li style={{ marginBottom: "8px" }}>
-                      Select whether you think the player will score more or less than the projection
+                      Select whether you think the player will score More or Less than the projection
                     </li>
                   </ul>
 
                   <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
-                    When selecting players, you'll notice a demon or goblin icon in some of the cards. Demons and goblins are non-standard payouts, where demons pay more, but are riskier and less likely to win, and vice versa for goblins.
+                    When selecting players, you'll notice a demon or goblin icon in some of the cards. Demons and goblins are non-standard payouts, where demons pay more, but are riskier and less likely to win, and vice versa for goblins. If selected, you'll be forced to pick the More option.
+                  </p>
+                </div>
+              </div>
+
+              {/* Navigation buttons */}
+              <div
+                className="flex justify-end items-center"
+                style={{
+                  padding: "0 18px 18px 18px",
+                }}
+              >
+                <button
+                  onClick={handleNext}
+                  className="bg-white text-purple-700 rounded font-semibold text-sm hover:bg-gray-100 transition-colors"
+                  style={{
+                    padding: "6px 12px",
+                  }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Step 4 - Start Picking - bottom-right overlay with blur */}
+      <AnimatePresence>
+        {showPopup && currentStep === 4 && (
+          <>
+            {/* Blurred backdrop for step 4 */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-40"
+              style={{
+                backdropFilter: "blur(8px)",
+                backgroundColor: "rgba(0, 0, 0, 0.3)",
+              }}
+              onClick={handleClose}
+            />
+
+            <motion.div
+            initial={{
+              x: 50,
+              opacity: 0,
+            }}
+            animate={{
+              x: 0,
+              opacity: 1,
+            }}
+            exit={{
+              x: 50,
+              opacity: 0,
+            }}
+            transition={{
+              type: "spring",
+              damping: 20,
+              stiffness: 150,
+              duration: 0.5,
+            }}
+            className="fixed bottom-6 right-6 z-50 w-full max-w-md"
+            style={{
+              maxHeight: "calc(100vh - 120px)",
+            }}
+          >
+            <div
+              className="relative rounded-lg shadow-2xl overflow-hidden"
+              style={{
+                backgroundColor: "#7f00ff",
+                color: "white",
+              }}
+            >
+              {/* Scrollable content */}
+              <div
+                style={{
+                  maxHeight: "calc(100vh - 200px)",
+                  overflowY: "auto",
+                  padding: "18px",
+                }}
+              >
+                <h2
+                  className="text-xl font-bold text-left underline"
+                  style={{
+                    marginBottom: "8px",
+                  }}
+                >
+                  Start Building Your Lineup
+                </h2>
+
+                <div>
+                  <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                    Now it's time to make your picks! Browse through the player cards and select "More" or "Less" for each player based on whether you think they'll go over or under the projected stat.
+                  </p>
+
+                  <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                    Your selected players will appear under "Your Lineup" on the right side of the page. Build a complete lineup to see your potential payout!
+                  </p>
+
+                  <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                    Good luck with your picks!
                   </p>
                 </div>
               </div>
@@ -318,11 +424,12 @@ export const WelcomePopup = ({
                     padding: "6px 12px",
                   }}
                 >
-                  Next
+                  Got it!
                 </button>
               </div>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
