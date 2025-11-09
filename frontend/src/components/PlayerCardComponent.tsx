@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowUp, ArrowDown, ArrowLeftRight } from 'lucide-react'
+import { ArrowUp, ArrowDown } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
-import PlayerStatsModal from './PlayerStatsModal'
 
 interface PlayerProjections {
   points: number;
@@ -105,21 +104,17 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
-  const [modifierActive, setModifierActive] = useState(false); // Demons & Goblins modifier state
   const [imageAttempt, setImageAttempt] = useState(0);
-  const [showStatsModal, setShowStatsModal] = useState(false);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
     const selectedPlayer = selectedPlayers.find(p => p.playerId === player.id);
     if (selectedPlayer) {
       setSelection(selectedPlayer.selection);
-      setModifierActive(selectedPlayer.modifier === player.specialModifier);
     } else {
       setSelection(null);
-      setModifierActive(false);
     }
-  }, [selectedPlayers, player.id, player.specialModifier]);
+  }, [selectedPlayers, player.id]);
 
   // Get image URL with fallbacks
   const getImageUrl = () => {
@@ -185,8 +180,6 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     gameTime,
     gameDay,
     projections,
-    specialModifier,
-    modifierMultiplier,
   } = player;
 
   const category = categoryMap[selectedCategory] || categoryMap['Popular'];
@@ -195,21 +188,13 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
   const roundToHalf = (v: number) => Math.round(v * 2) / 2;
   const baseStatValue = roundToHalf(statValue);
   
-  // Calculate modified stat value if modifier is active
-  const displayStatValue = modifierActive && modifierMultiplier 
-    ? roundToHalf(baseStatValue + modifierMultiplier)
-    : baseStatValue;
+  // Simple stat display - no modifiers
+  const displayStatValue = baseStatValue;
 
   const handleButtonClick = (type: 'more' | 'less') => {
-    // Modifier picks can only be "MORE"
-    if (modifierActive && type === 'less') {
-      return; // Don't allow "less" for modifier picks
-    }
-    
     // If clicking the same button, deselect it
     if (selection === type) {
       setSelection(null);
-      setModifierActive(false); // Also clear modifier when deselecting
       // Remove player from selectedPlayers
       setSelectedPlayers(prev => prev.filter(p => p.playerId !== player.id));
     } else {
@@ -232,80 +217,21 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
           gameTime: player.gameTime,
           category: selectedCategory,
           selection: type,
-          // Store the display stat value (with modifier if active)
           statValue: displayStatValue,
-          // Include modifier info if active
-          modifier: modifierActive ? specialModifier : undefined,
-          originalStatValue: baseStatValue // Store original before modifier
+          originalStatValue: baseStatValue
         }];
       });
     }
   };
 
-  // Generate mock last 5 games data (TODO: Replace with real API data)
-  const generateMockGameLogs = () => {
-    return Array.from({ length: 5 }, (_, i) => {
-      const variance = (Math.random() * 8 - 4);
-      const gameStatValue = roundToHalf(baseStatValue + variance);
-      return {
-        game_date: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        opponent: ['LAL', 'BOS', 'GSW', 'MIA', 'PHX'][i],
-        stat_value: gameStatValue,
-        line_value: baseStatValue,
-        result: (gameStatValue > baseStatValue ? 'over' : 'under') as 'over' | 'under'
-      };
-    });
-  };
-
   return (
     <>
-      <div className={`player-card ${selection ? 'active' : ''} ${
-        modifierActive && specialModifier === 'demon' ? 'demon-active' : 
-        modifierActive && specialModifier === 'goblin' ? 'goblin-active' : ''
-      }`}>
-        {/* Special Modifier Badge */}
-        {specialModifier && (
-          <div className="absolute top-1 right-1 z-10">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (selection === 'more') {
-                  setModifierActive(!modifierActive);
-                }
-              }}
-              disabled={selection !== 'more'}
-              className={`p-0.5 rounded ${
-                modifierActive 
-                  ? specialModifier === 'demon' 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-green-600 text-white'
-                  : 'bg-surface/80 text-text-muted hover:bg-surface'
-              } text-[10px] font-bold border ${
-                modifierActive
-                  ? specialModifier === 'demon'
-                    ? 'border-red-600'
-                    : 'border-green-600'
-                  : 'border-card-border'
-              } transition-all ${
-                selection !== 'more' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-              }`}
-              title={`${specialModifier === 'demon' ? '🔥 Demon' : '👺 Goblin'} modifier${selection !== 'more' ? ' (select MORE first)' : ''}`}
-            >
-              <ArrowLeftRight size={12} />
-            </button>
-          </div>
-        )}
-        
+      <div className={`player-card ${selection ? 'active' : ''}`}>
         {/* Main Content Area */}
         <div className="flex flex-col items-center justify-center p-1.5 overflow-hidden grow">
-            {/* Player Photo - Clickable */}
-            <button 
-              onClick={() => {
-                console.log('🖱️ Headshot clicked!', player.name);
-                setShowStatsModal(true);
-              }}
-              className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40 hover:border-accent1 hover:scale-110 transition-all cursor-pointer"
-              title="View last 5 games"
+            {/* Player Photo */}
+            <div 
+              className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40"
             >
               <img 
                 src={getImageUrl()}
@@ -314,7 +240,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-            </button>
+            </div>
 
             {/* Position */}
             <div className="text-[9px] font-semibold text-text-muted shrink-0 mb-0.5">
@@ -334,73 +260,31 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 </div>
             </div>
 
-            {/* Stat Projection - Compact with modifier */}
+            {/* Stat Projection - Compact */}
             <div className="flex flex-row items-baseline text-center shrink-0 gap-1">
-                <div className={`text-xl font-normal ${
-                  modifierActive 
-                    ? specialModifier === 'demon' 
-                      ? 'text-red-600' 
-                      : 'text-green-600'
-                    : ''
-                }`}>
+                <div className="text-xl font-normal">
                   {displayStatValue.toFixed(1)}
                 </div>
                 <div className="text-[10px] text-text-muted">{category.label}</div>
             </div>
-            
-            {/* Modifier indicator dot */}
-            {modifierActive && specialModifier && (
-              <div className={`w-1 h-1 rounded-full mt-0.5 ${
-                specialModifier === 'demon' ? 'bg-red-600' : 'bg-green-600'
-              }`}></div>
-            )}
         </div>
 
         {/* Bottom Buttons */}
         <div className="flex mt-auto">
           <button 
             onClick={() => handleButtonClick('less')}
-            disabled={modifierActive}
-            className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''} ${
-              modifierActive ? 'opacity-40 cursor-not-allowed' : ''
-            }`}
+            className={`selection-button selection-button-left ${selection === 'less' ? 'active' : ''}`}
           >
             <ArrowDown size={16} className="inline-block mr-[5px]" /> Less
           </button>
           <button 
             onClick={() => handleButtonClick('more')}
-            className={`selection-button ${
-              selection === 'more' && modifierActive && specialModifier === 'demon'
-                ? 'bg-red-600 text-white border-red-600'
-                : selection === 'more' && modifierActive && specialModifier === 'goblin'
-                ? 'bg-green-600 text-white border-green-600'
-                : selection === 'more'
-                ? 'active'
-                : ''
-            }`}
-            style={
-              selection === 'more' && modifierActive
-                ? specialModifier === 'demon'
-                  ? { backgroundColor: 'rgb(220, 38, 38)', color: 'white' }
-                  : { backgroundColor: 'rgb(22, 163, 74)', color: 'white' }
-                : undefined
-            }
+            className={`selection-button ${selection === 'more' ? 'active' : ''}`}
           >
             <ArrowUp size={16} className="inline-block mr-[5px]" /> More
           </button>
         </div>
       </div>
-
-      {/* Stats Modal */}
-      <PlayerStatsModal
-        isOpen={showStatsModal}
-        onClose={() => setShowStatsModal(false)}
-        playerName={player.name}
-        playerImage={getImageUrl()}
-        statCategory={`${category.label} - ${baseStatValue.toFixed(1)}`}
-        lineValue={baseStatValue}
-        lastFiveGames={generateMockGameLogs()}
-      />
     </>
   )
 }

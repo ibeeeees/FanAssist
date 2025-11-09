@@ -120,7 +120,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
       setTimeout(() => {
         setShowResult(false);
         onClearAll();
-      }, 5000);
+      }, 10000);
     } catch (err) {
       console.error('Error placing parlay:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -140,9 +140,9 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
   };
 
   return (
-    <div className="bg-surface/50 p-2 rounded-lg border border-card-border/50">
+    <div className="bg-surface/50 p-1 rounded-lg border border-card-border/50">
       {/* Balance Section - Compact */}
-      <div className="mb-2 p-2 bg-card-bg/30 rounded-lg border border-card-border/30">
+      <div className="p-1 bg-card-bg/30 rounded-lg border border-card-border/30">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[10px] font-semibold text-text-muted uppercase">Paper Money</span>
           <button
@@ -163,7 +163,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
         </div>
         <button
           onClick={handleResetBalance}
-          className="text-[9px] text-text-muted hover:text-accent1 transition-colors"
+          className="bg-accent2 px-1 py-0.5 rounded-lg font-medium text-lg hover:text-accent1 transition-colors"
         >
           Reset
         </button>
@@ -177,23 +177,23 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
         <div className="grid grid-cols-2 gap-1">
           <button
             onClick={() => setBetMode('standard')}
-            className={`py-1 px-2 rounded text-[10px] font-bold transition-all ${
+            className={`py-1 px-2 rounded text-sm font-medium ${
               betMode === 'standard'
-                ? 'bg-gradient-to-r from-accent1 to-accent2 text-black'
+                ? 'bg-accent1 text-black'
                 : 'bg-card-bg/50 text-text-muted hover:bg-card-bg border border-card-border/50'
             }`}
           >
-            ⚡ Power
+            Power
           </button>
           <button
             onClick={() => setBetMode('flex')}
-            className={`py-1 px-2 rounded text-[10px] font-bold transition-all ${
+            className={`py-1 px-2 rounded text-sm font-medium ${
               betMode === 'flex'
-                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                ? 'bg-accent1 text-black'
                 : 'bg-card-bg/50 text-text-muted hover:bg-card-bg border border-card-border/50'
             }`}
           >
-            🎯 Flex
+            Flex
           </button>
         </div>
 
@@ -212,7 +212,7 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
           Wager
         </label>
         <div className="relative overflow-hidden">
-          <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-3.5 h-3.5 bg-green-500/20 rounded">
+          <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-2.5 h-2.5 bg-green-500/20 rounded">
             <DollarSign className="w-2 h-2 text-green-500" />
           </div>
           <input
@@ -231,18 +231,18 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
       <button
         onClick={handlePlaceParlay}
         disabled={isLoading || selectedPlayers.length < 2}
-        className={`w-full py-1.5 rounded text-xs font-bold text-white flex items-center justify-center gap-1 transition-all ${
+        className={`w-full py-0.5 rounded text-xs font-bold text-white flex items-center justify-center gap-1 ${
           selectedPlayers.length < 2
             ? 'bg-gray-400 cursor-not-allowed opacity-50'
             : isLoading
             ? 'bg-blue-500 cursor-wait animate-pulse'
-            : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+            : 'bg-accent2 hover:bg-accent2/80 cursor-pointer'
         }`}
       >
         {isLoading ? (
           <>
             <RefreshCw className="w-3 h-3 animate-spin" />
-            <span>Placing...</span>
+            <span>Placing...</span> 
           </>
         ) : (
           <>

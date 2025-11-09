@@ -189,12 +189,13 @@ function App() {
       </div>
 
 
-      {/* Responsive Layout: Dynamic based on lineup collapse state */}
-      <div className={`flex flex-col gap-4 max-w-[1920px] mx-auto ${isLineupCollapsed ? '' : 'md:flex-row'}`}>
-        {/* Left side - Player Cards (full width when collapsed, otherwise side-by-side) */}
-        <div className={`order-2 md:order-1 ${isLineupCollapsed ? 'w-full' : 'flex-1'}`}>
+      {/* Responsive Layout: Player cards take most space */}
+      <div className="flex flex-col md:flex-row gap-4 mx-auto w-full">
+
+        {/* Left side - Player Cards (takes most of the space) */}
+        <div className="flex flex-row order-2 md:order-1">
           {/* Player Cards Grid */}
-          <div className="relative">
+          <div className="relative w-full">
             {/* Welcome Popup */}
             <WelcomePopup triggerDelay={2000} />
 
@@ -205,28 +206,22 @@ function App() {
                   <p className="text-text-muted">Loading players from backend...</p>
                 </div>
               ) : (
-                players.map((player, index) => (
-                  <ScrollTriggeredAnimation
+                players.map((player) => (
+                  <PlayerCardComponent
                     key={player.id}
-                    delay={index * 0.05}
-                    duration={0.5}
-                    fallDistance={30}
-                  >
-                    <PlayerCardComponent
-                      player={player}
-                      selectedCategory={selectedCategory}
-                      selectedPlayers={selectedPlayers}
-                      setSelectedPlayers={setSelectedPlayers}
-                    />
-                  </ScrollTriggeredAnimation>
+                    player={player}
+                    selectedCategory={selectedCategory}
+                    selectedPlayers={selectedPlayers}
+                    setSelectedPlayers={setSelectedPlayers}
+                  />
                 ))
               )}
             </div>
           </div>
         </div>
 
-        {/* Right Side - Lineup Panel (full width when collapsed) */}
-        <aside className={`order-1 md:order-2 ${isLineupCollapsed ? 'w-full' : 'w-full md:w-64 lg:w-72 xl:w-80'}`}>
+        {/* Right Side - Lineup Panel (fixed width, doesn't expand) */}
+        <aside className="order-2">
           <SelectedPlayersSummary 
             selectedPlayers={selectedPlayers}
             setSelectedPlayers={setSelectedPlayers}

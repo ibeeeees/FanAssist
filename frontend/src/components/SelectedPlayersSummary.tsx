@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Activity, CircleSlash } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
 import { calculatePayout } from '../services/payoutCalculator'
@@ -11,7 +11,7 @@ interface SelectedPlayersSummaryProps {
 }
 
 const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selectedPlayers, setSelectedPlayers, onCollapseChange }) => {
-  const [isOpen, setIsOpen] = useState(true); // Always open by default
+  const [isOpen, setIsOpen] = useState(false); // Closed by default
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [isCollapsed, setIsCollapsed] = useState(false); // New: collapse state
   const [hasManuallyClosedWithPlayers, setHasManuallyClosedWithPlayers] = useState(false);
@@ -35,14 +35,6 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check if lineup contains any demon or goblin picks
-  const hasDemonOrGoblin = useMemo(() => {
-    return selectedPlayers.some(p => p.modifier === 'demon' || p.modifier === 'goblin');
-  }, [selectedPlayers]);
-  
-  // Count demons and goblins
-  const demonCount = useMemo(() => selectedPlayers.filter(p => p.modifier === 'demon').length, [selectedPlayers]);
-  const goblinCount = useMemo(() => selectedPlayers.filter(p => p.modifier === 'goblin').length, [selectedPlayers]);
   // Auto-open when a player is selected for the first time (only if user hasn't manually closed it)
   useEffect(() => {
     if (selectedPlayers.length > 0 && !isOpen && !hasManuallyClosedWithPlayers) {
@@ -116,56 +108,61 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
 
           {/* Player List - Collapsible with compact height */}
           {!isCollapsed && selectedPlayers.length > 0 ? (
-            <div className="flex flex-col max-h-[180px] overflow-y-auto flex-shrink-0">
+            <div className="flex flex-col max-h-[180px] overflow-y-auto shrink-0">
               {selectedPlayers.map((sp, index) => (
                 <div 
                   key={`${sp.playerId}-${index}`}
-                  className="px-3 py-1.5 hover:bg-card-bg/20 transition-colors border-b border-card-border/20 last:border-b-0"
+                  className="flex flex-row items-center gap-1 px-3 py-1.5 hover:bg-card-bg/20 transition-colors"
                 >
-                  {/* First Row: Headshot */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <img src={sp.image} alt={sp.playerName} className="w-8 h-8 rounded-full flex-shrink-0 border-2 border-card-border/50" />
-                    <div className="font-bold text-base md:text-lg text-text truncate leading-tight">{sp.playerName}</div>
+                  {/* Headshot */}
+                  <img src={sp.image} alt={sp.playerName} className="w-5 h-5 rounded-full shrink-0 " />
+                  
+                  {/* Player Info Column */}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    {/* Name */}
+                    <div className="text-left font-bold text-sm text-text truncate leading-tight">{sp.playerName}</div>
+                    {/* Team/Position */}
+                    <div className="text-left text-[10px] text-text-muted leading-tight">
+                      {sp.teamAbbr} - {sp.position?.join(', ') || 'N/A'}
+                    </div>
+                    {/* Game Info */}
+                    <div className="text-left text-[10px] text-text-muted leading-tight">
+                      {sp.gameDay} {sp.gameTime} {sp.gameLocation === 'home' ? 'vs' : '@'} {sp.opponentAbbr}
+                    </div>
+                    {/* Stat Line */}
+                    <div className="text-left text-xs font-semibold text-text leading-tight mt-0.5">
+                      {sp.statValue.toFixed(1)} {sp.category}
+                    </div>
                   </div>
 
-                  {/* Second Row: Stat Info + Toggle Buttons */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1 text-sm md:text-base leading-tight">
-                      <span className={`font-bold ${sp.selection === 'more' ? 'text-green-500' : 'text-red-500'}`}>
-                        {sp.selection === 'more' ? 'O' : 'U'} {sp.statValue.toFixed(1)}
-                      </span>
-                      <span className="text-text-muted/70 truncate">{sp.category}</span>
-                    </div>
-                    
-                    {/* Toggle buttons */}
-                    <div className="flex gap-1 flex-shrink-0">
-                      <button
-                        onClick={() => handleToggleSelection(index, 'more')}
-                        className={`w-5 h-5 rounded text-[10px] font-bold transition-all ${
-                          sp.selection === 'more'
-                            ? 'bg-green-500 text-white shadow-md'
-                            : 'bg-card-bg border border-card-border text-text-muted hover:bg-green-500/20 hover:border-green-500/50'
-                        }`}
-                      >
-                        O
-                      </button>
-                      <button
-                        onClick={() => handleToggleSelection(index, 'less')}
-                        className={`w-5 h-5 rounded text-[10px] font-bold transition-all ${
-                          sp.selection === 'less'
-                            ? 'bg-red-500 text-white shadow-md'
-                            : 'bg-card-bg border border-card-border text-text-muted hover:bg-red-500/20 hover:border-red-500/50'
-                        }`}
-                      >
-                        U
-                      </button>
-                    </div>
+                  {/* Toggle buttons */}
+                  <div className="flex  flex-col shrink-0">
+                    <button
+                      onClick={() => handleToggleSelection(index, 'more')}
+                      className={`w-5 h-3 rounded-t text-[10px] font-bold transition-all ${
+                        sp.selection === 'more'
+                          ? 'bg-accent1 text-black shadow-md border-accent1'
+                          : 'bg-card-bg border border-card-border text-text-muted hover:bg-accent1/20 hover:border-accent1/50'
+                      }`}
+                    >
+                      More
+                    </button>
+                    <button
+                      onClick={() => handleToggleSelection(index, 'less')}
+                      className={`w-5 h-3 rounded-b text-[10px] font-bold transition-all ${
+                        sp.selection === 'less'
+                          ? 'bg-accent1 text-black shadow-md border-accent1'
+                          : 'bg-card-bg border border-card-border text-text-muted hover:bg-accent1/20 hover:border-accent1/50'
+                      }`}
+                    >
+                      Less
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : !isCollapsed && selectedPlayers.length === 0 ? (
-            <div className="flex flex-col items-center py-4 px-4 text-text-muted flex-shrink-0">
+            <div className="flex flex-col items-center py-4 px-4 text-text-muted shrink-0">
               <CircleSlash className="w-6 h-6 mb-1" />
               <span className='text-xs font-medium'>No Players Selected</span>
               <span className='text-[10px] text-text-muted/70 mt-0.5'>Choose players below</span>
@@ -174,7 +171,7 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
 
           {/* Betting Panel - Only show when players are selected and not collapsed */}
           {!isCollapsed && selectedPlayers.length > 0 && (
-            <div className="flex-shrink-0 border-t border-card-border/30">
+            <div className="shrink-0 border-t border-card-border/30">
               <BettingPanel 
                 selectedPlayers={selectedPlayers}
                 onClearAll={handleClearAll}
