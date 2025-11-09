@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowUp, ArrowDown, ArrowLeftRight } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
+import PlayerStatsModal from './PlayerStatsModal'
 
 interface PlayerProjections {
   points: number;
@@ -104,7 +105,9 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
-  const [modifierActive, setModifierActive] = useState<boolean>(false);
+  const [modifierActive, setModifierActive] = useState(false); // Demons & Goblins modifier state
+  const [imageAttempt, setImageAttempt] = useState(0);
+  const [showStatsModal, setShowStatsModal] = useState(false);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
@@ -118,6 +121,61 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     }
   }, [selectedPlayers, player.id, player.specialModifier]);
 
+  // Get image URL with fallbacks
+  const getImageUrl = () => {
+    let url = '';
+    if (imageAttempt === 0) {
+      // Special cases mapping for players with non-standard names
+      const specialCases: { [key: string]: string } = {
+        'Luka Doncic': 'doncilu01',
+        'Luka Dončić': 'doncilu01',
+        'Nikola Jokic': 'jokicni01',
+        'Nikola Jokić': 'jokicni01',
+        'Anthony Davis': 'davisan02',
+        'Giannis Antetokounmpo': 'antetgi01',
+        'Nikola Vucevic': 'vucevni01',
+        'Nikola Vučević': 'vucevni01',
+        'Bogdan Bogdanovic': 'bogdabo01',
+        'Bogdan Bogdanović': 'bogdabo01',
+        'Bojan Bogdanovic': 'bogdabo02',
+        'Bojan Bogdanović': 'bogdabo02',
+        'Jaylen Brown': 'brownja02',  // Using 02 for correct Jaylen Brown (Celtics)
+      };
+
+      // Check if player has a special case mapping
+      let bbrefCode = specialCases[player.name];
+      
+      if (!bbrefCode) {
+        // Generate code algorithmically
+        const nameParts = player.name.split(' ');
+        const firstName = nameParts[0]?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const lastName = nameParts[nameParts.length - 1]?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '') || '';
+        
+        const lastPart = lastName.substring(0, 5).padEnd(5, lastName[0] || 'x');
+        const firstPart = firstName.substring(0, 2);
+        bbrefCode = `${lastPart}${firstPart}01`;
+      }
+      
+      url = `https://www.basketball-reference.com/req/202106291/images/headshots/${bbrefCode}.jpg`;
+    } else if (imageAttempt === 1) {
+      // Secondary: Try NBA CDN
+      url = `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.id}.png`;
+    } else {
+      // Final fallback to UI Avatars
+      url = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=100&background=10b981&color=fff&bold=true&rounded=true`;
+    }
+    
+    console.log(`[${player.name}] Attempt ${imageAttempt}: ${url}`);
+    return url;
+  };
+
+  const handleImageError = () => {
+    console.log(`[${player.name}] Image failed at attempt ${imageAttempt}`);
+    if (imageAttempt < 2) {
+      setImageAttempt(prev => prev + 1);
+    }
+  };
+
   const {
     name,
     teamAbbr,
@@ -125,54 +183,22 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     gameLocation,
     opponentAbbr,
     gameTime,
+    gameDay,
     projections,
     specialModifier,
     modifierMultiplier,
   } = player;
 
   const category = categoryMap[selectedCategory] || categoryMap['Popular'];
-  const baseStatValue = projections[category.key] ?? projections.points ?? 0;
+  const statValue = projections[category.key] ?? projections.points ?? 0;
+  // Round to nearest 0.5 for display
+  const roundToHalf = (v: number) => Math.round(v * 2) / 2;
+  const baseStatValue = roundToHalf(statValue);
   
   // Calculate modified stat value if modifier is active
-  const statValue = modifierActive && modifierMultiplier !== undefined
-    ? baseStatValue + modifierMultiplier
+  const displayStatValue = modifierActive && modifierMultiplier 
+    ? roundToHalf(baseStatValue + modifierMultiplier)
     : baseStatValue;
-  
-  // Check if this player has a special modifier available
-  const hasSpecialModifier = specialModifier !== undefined && modifierMultiplier !== undefined;
-
-  const handleModifierToggle = () => {
-    // Toggle modifier on/off
-    const newModifierActive = !modifierActive;
-    setModifierActive(newModifierActive);
-    
-    // Update selectedPlayers if player is already selected
-    if (selection) {
-      const newStatValue = newModifierActive && modifierMultiplier !== undefined
-        ? baseStatValue + modifierMultiplier
-        : baseStatValue;
-      
-      setSelectedPlayers(prev => {
-        const filtered = prev.filter(p => p.playerId !== player.id);
-        return [...filtered, {
-          playerId: player.id,
-          image: player.image,
-          playerName: name,
-          teamAbbr: player.teamAbbr,
-          position: player.position,
-          gameLocation: player.gameLocation,
-          opponentAbbr: player.opponentAbbr,
-          gameDay: player.gameDay,
-          gameTime: player.gameTime,
-          category: selectedCategory,
-          selection: selection,
-          statValue: newStatValue,
-          originalStatValue: baseStatValue,
-          modifier: newModifierActive ? specialModifier || null : null,
-        }];
-      });
-    }
-  };
 
   const handleButtonClick = (type: 'more' | 'less') => {
     // Modifier picks can only be "MORE"
@@ -206,78 +232,128 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
           gameTime: player.gameTime,
           category: selectedCategory,
           selection: type,
-          statValue: statValue,
-          originalStatValue: baseStatValue,
-          modifier: modifierActive ? specialModifier || null : null,
+          // Store the display stat value (with modifier if active)
+          statValue: displayStatValue,
+          // Include modifier info if active
+          modifier: modifierActive ? specialModifier : undefined,
+          originalStatValue: baseStatValue // Store original before modifier
         }];
       });
     }
   };
 
+  // Generate mock last 5 games data (TODO: Replace with real API data)
+  const generateMockGameLogs = () => {
+    return Array.from({ length: 5 }, (_, i) => {
+      const variance = (Math.random() * 8 - 4);
+      const gameStatValue = roundToHalf(baseStatValue + variance);
+      return {
+        game_date: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        opponent: ['LAL', 'BOS', 'GSW', 'MIA', 'PHX'][i],
+        stat_value: gameStatValue,
+        line_value: baseStatValue,
+        result: (gameStatValue > baseStatValue ? 'over' : 'under') as 'over' | 'under'
+      };
+    });
+  };
+
   return (
-    <div className={`player-card ${selection ? 'active' : ''} ${modifierActive && specialModifier === 'demon' ? 'demon-active' : modifierActive && specialModifier === 'goblin' ? 'goblin-active' : ''}`}>
+    <>
+      <div className={`player-card ${selection ? 'active' : ''} ${
+        modifierActive && specialModifier === 'demon' ? 'demon-active' : 
+        modifierActive && specialModifier === 'goblin' ? 'goblin-active' : ''
+      }`}>
+        {/* Special Modifier Badge */}
+        {specialModifier && (
+          <div className="absolute top-1 right-1 z-10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (selection === 'more') {
+                  setModifierActive(!modifierActive);
+                }
+              }}
+              disabled={selection !== 'more'}
+              className={`p-0.5 rounded ${
+                modifierActive 
+                  ? specialModifier === 'demon' 
+                    ? 'bg-red-600 text-white' 
+                    : 'bg-green-600 text-white'
+                  : 'bg-surface/80 text-text-muted hover:bg-surface'
+              } text-[10px] font-bold border ${
+                modifierActive
+                  ? specialModifier === 'demon'
+                    ? 'border-red-600'
+                    : 'border-green-600'
+                  : 'border-card-border'
+              } transition-all ${
+                selection !== 'more' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+              title={`${specialModifier === 'demon' ? '🔥 Demon' : '👺 Goblin'} modifier${selection !== 'more' ? ' (select MORE first)' : ''}`}
+            >
+              <ArrowLeftRight size={12} />
+            </button>
+          </div>
+        )}
+        
         {/* Main Content Area */}
-        <div className="flex flex-col items-center justify-center p-1 overflow-hidden grow">
+        <div className="flex flex-col items-center justify-center p-1.5 overflow-hidden grow">
+            {/* Player Photo - Clickable */}
+            <button 
+              onClick={() => {
+                console.log('🖱️ Headshot clicked!', player.name);
+                setShowStatsModal(true);
+              }}
+              className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40 hover:border-accent1 hover:scale-110 transition-all cursor-pointer"
+              title="View last 5 games"
+            >
+              <img 
+                src={getImageUrl()}
+                alt={player.name}
+                onError={handleImageError}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </button>
 
-          {/* Icon */}
-          <div className={`w-2 h-2 rounded-full shrink-0 mb-1 ${
-            modifierActive && specialModifier === 'demon' 
-              ? 'bg-red-600' 
-              : modifierActive && specialModifier === 'goblin' 
-              ? 'bg-green-600' 
-              : 'bg-accent1'
-          }`}></div>
+            {/* Position */}
+            <div className="text-[9px] font-semibold text-text-muted shrink-0 mb-0.5">
+                {position && position.length > 0 ? position.join(' - ') : '—'}
+            </div>
 
-          {/* Position */}
-          <div className="text-xs font-semibold text-text-muted shrink-0">
-              {position.join(' - ')}
-          </div>
+            {/* Name - Compact */}
+            <div className="font-light text-sm leading-tight mb-0.5 text-center px-1">{name}</div>
 
-          {/* Name */}
-          <div className="font-light text-lg">{name}</div>
+            {/* Game Info - Condensed */}
+            <div className="flex flex-col text-center shrink-0 w-full items-center justify-center mb-0.5">
+                <div className="text-[10px] text-text-muted leading-tight">
+                    {teamAbbr || 'TBD'} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr || 'TBD'}
+                </div>
+                <div className="text-[10px] text-text-muted leading-tight">
+                    {gameDay || 'Today'} • {gameTime || 'TBD'}
+                </div>
+            </div>
 
-          {/* Game Info */}
-          <div className="flex flex-col text-center shrink-0 w-full align-center justify-center">
-              <div className="text-xs text-text-muted leading-tight">
-                  {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
-              </div>
-              <div className="text-xs text-text-muted">
-                  {gameTime}
-              </div>
-          </div>
-
-          {/* Stat Projection */}
-          <div className="flex flex-row items-baseline text-center shrink-0 gap-0.5">
-
-              {/* Special Modifier Toggle Button */}
-              {hasSpecialModifier && (
-                <button
-                  onClick={handleModifierToggle}
-                  className={`flex items-center gap-1 text-[9px] p-0.5 mt-1 rounded-full font-bold transition-all ${
-                    modifierActive
-                      ? specialModifier === 'demon'
-                        ? 'bg-red-600 text-white shadow-sm border border-red-600'
-                        : 'bg-green-600 text-white shadow-sm border border-green-600'
-                      : specialModifier === 'demon'
-                      ? 'bg-card-bg text-text-muted border border-card-border hover:bg-red-600/10 hover:border-red-600 hover:text-red-600'
-                      : 'bg-card-bg text-text-muted border border-card-border hover:bg-green-600/10 hover:border-green-600 hover:text-green-600'
-                  }`}
-                  title={`Toggle ${specialModifier?.toUpperCase()}: ${modifierMultiplier && modifierMultiplier > 0 ? '+' : ''}${modifierMultiplier?.toFixed(1)} ${modifierActive ? '(Active)' : '(Inactive)'}`}
-                >
-                  <ArrowLeftRight size={12} />
-                </button>
-              )}
-              <div className={`text-2xl font-normal ${
-                modifierActive && specialModifier === 'demon' 
-                  ? 'text-red-500' 
-                  : modifierActive && specialModifier === 'goblin' 
-                  ? 'text-green-500' 
-                  : ''
-              }`}>
-                  {statValue.toFixed(1)}
-              </div>
-              <div className="text-xs text-text-muted">{category.label}</div>
-          </div>
+            {/* Stat Projection - Compact with modifier */}
+            <div className="flex flex-row items-baseline text-center shrink-0 gap-1">
+                <div className={`text-xl font-normal ${
+                  modifierActive 
+                    ? specialModifier === 'demon' 
+                      ? 'text-red-600' 
+                      : 'text-green-600'
+                    : ''
+                }`}>
+                  {displayStatValue.toFixed(1)}
+                </div>
+                <div className="text-[10px] text-text-muted">{category.label}</div>
+            </div>
+            
+            {/* Modifier indicator dot */}
+            {modifierActive && specialModifier && (
+              <div className={`w-1 h-1 rounded-full mt-0.5 ${
+                specialModifier === 'demon' ? 'bg-red-600' : 'bg-green-600'
+              }`}></div>
+            )}
         </div>
 
         {/* Bottom Buttons */}
@@ -313,7 +389,19 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
             <ArrowUp size={16} className="inline-block mr-[5px]" /> More
           </button>
         </div>
-    </div>
+      </div>
+
+      {/* Stats Modal */}
+      <PlayerStatsModal
+        isOpen={showStatsModal}
+        onClose={() => setShowStatsModal(false)}
+        playerName={player.name}
+        playerImage={getImageUrl()}
+        statCategory={`${category.label} - ${baseStatValue.toFixed(1)}`}
+        lineValue={baseStatValue}
+        lastFiveGames={generateMockGameLogs()}
+      />
+    </>
   )
 }
 

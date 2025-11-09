@@ -58,10 +58,10 @@ class NBAScheduleService:
             
             print(f"Fetching games for date: {date_str}")
             
-            # Get scoreboard for the date with timeout
+            # Get scoreboard for the date with reduced timeout
             import time
             time.sleep(0.5)  # Add delay before API call
-            scoreboard = scoreboardv2.ScoreboardV2(game_date=date_str, timeout=30)
+            scoreboard = scoreboardv2.ScoreboardV2(game_date=date_str, timeout=10)  # Reduced timeout to 10 seconds
             games_df = scoreboard.get_data_frames()[0]  # GameHeader
             line_score_df = scoreboard.get_data_frames()[1]  # LineScore
             

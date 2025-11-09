@@ -191,13 +191,21 @@ class PopularPlayersService:
         
         print(f"🔍 Fetching roster for {team_name} (ID: {team_id})...")
         
-        # Get team roster
+        # Get team roster with shorter timeout and delay
         try:
-            roster = commonteamroster.CommonTeamRoster(team_id=team_id)
+            import time
+            time.sleep(0.8)  # Add 800ms delay before each roster request
+            roster = commonteamroster.CommonTeamRoster(team_id=team_id, timeout=10)  # Reduced timeout to 10 seconds
             roster_df = roster.get_data_frames()[0]
             print(f"✅ Got roster for {team_name} - {len(roster_df)} players")
         except Exception as e:
-            print(f"❌ Error getting roster for team {team_id} ({team_name}): {e}")
+            error_msg = str(e)
+            if 'timeout' in error_msg.lower() or 'timed out' in error_msg.lower():
+                print(f"⏱️  Timeout getting roster for {team_name} - NBA API is slow, skipping")
+            else:
+                print(f"❌ Error getting roster for team {team_id} ({team_name}): {e}")
+            print(f"⚠️  Skipping {team_name} - continuing with other teams")
+            # NO FALLBACK - Skip this team if API fails
             return []
         
         # Find each popular player and get their stats
@@ -210,6 +218,11 @@ class PopularPlayersService:
                     continue
                 
                 player_id = int(player_row.iloc[0]['PLAYER_ID'])
+                # Try to pull position from roster row if available (e.g., 'G', 'F-C', etc.)
+                try:
+                    position = str(player_row.iloc[0]['POSITION']) if 'POSITION' in player_row.columns else ''
+                except Exception:
+                    position = ''
                 
                 # Check if player is healthy (not injured/out)
                 # Check recent game activity - if they haven't played in last 7 days, likely injured
@@ -263,6 +276,7 @@ class PopularPlayersService:
                     "team": team_name,
                     "opponent": opponent,
                     "game_date": game_date,
+                    "position": position,
                     "season_averages": {
                         "points": round(season_avg.points_per_game, 1),
                         "rebounds": round(season_avg.rebounds_per_game, 1),
@@ -393,6 +407,70 @@ class PopularPlayersService:
             lines["pa"] = self._round_to_half(pa - 1.5)
         
         return lines
+    
+    async def _create_fallback_players(
+        self,
+        team_id: int,
+        team_name: str,
+        player_names: List[str],
+        opponent: str,
+        game_date: str
+    ) -> List[Dict]:
+        """Create fallback player data when NBA API fails"""
+        fallback_players = []
+        
+        # Estimated stats for star players (these are reasonable averages)
+        star_stats = {
+            "LeBron James": {"pts": 24.0, "reb": 7.5, "ast": 7.0, "position": "F"},
+            "Anthony Davis": {"pts": 24.0, "reb": 11.5, "ast": 3.5, "position": "F-C"},
+            "Stephen Curry": {"pts": 26.0, "reb": 4.5, "ast": 5.0, "position": "G"},
+            "Luka Dončić": {"pts": 32.0, "reb": 8.5, "ast": 9.0, "position": "G-F"},
+            "Giannis Antetokounmpo": {"pts": 30.0, "reb": 11.5, "ast": 6.0, "position": "F"},
+            "Jayson Tatum": {"pts": 27.0, "reb": 8.5, "ast": 4.5, "position": "F"},
+            "Jaylen Brown": {"pts": 23.0, "reb": 5.5, "ast": 3.5, "position": "G-F"},
+            "Joel Embiid": {"pts": 33.0, "reb": 10.5, "ast": 4.0, "position": "C"},
+            "Nikola Jokić": {"pts": 26.0, "reb": 12.0, "ast": 9.0, "position": "C"},
+            "Kevin Durant": {"pts": 28.0, "reb": 6.5, "ast": 5.0, "position": "F"},
+            "Damian Lillard": {"pts": 25.0, "reb": 4.0, "ast": 7.0, "position": "G"},
+            "Shai Gilgeous-Alexander": {"pts": 31.0, "reb": 5.5, "ast": 6.0, "position": "G"},
+            "Ja Morant": {"pts": 26.0, "reb": 5.5, "ast": 8.0, "position": "G"},
+            "Jaren Jackson Jr.": {"pts": 18.5, "reb": 5.5, "ast": 1.5, "position": "F-C"},
+            "Chet Holmgren": {"pts": 17.0, "reb": 7.5, "ast": 2.5, "position": "F-C"},
+            "Paolo Banchero": {"pts": 22.0, "reb": 6.5, "ast": 3.5, "position": "F"},
+            "Franz Wagner": {"pts": 19.5, "reb": 5.0, "ast": 3.5, "position": "F"},
+            "Jalen Brunson": {"pts": 28.0, "reb": 3.5, "ast": 6.5, "position": "G"},
+            "LaMelo Ball": {"pts": 23.0, "reb": 5.0, "ast": 8.0, "position": "G"},
+            "Trae Young": {"pts": 26.0, "reb": 3.0, "ast": 11.0, "position": "G"},
+            "Cade Cunningham": {"pts": 22.0, "reb": 6.5, "ast": 7.0, "position": "G"},
+        }
+        
+        for player_name in player_names[:2]:  # Limit to 2 players per failed team
+            stats = star_stats.get(player_name, {"pts": 20.0, "reb": 5.0, "ast": 4.0, "position": "G-F"})
+            
+            player_data = {
+                "player_name": player_name,
+                "player_id": 0,  # Placeholder ID
+                "team": team_name,
+                "opponent": opponent,
+                "game_date": game_date,
+                "position": stats["position"],
+                "season_averages": {
+                    "pts": stats["pts"],
+                    "reb": stats["reb"],
+                    "ast": stats["ast"],
+                    "stl": 1.0,
+                    "blk": 0.5,
+                    "fg_pct": 47.5,
+                    "fg3_pct": 35.0,
+                    "ft_pct": 85.0
+                },
+                "prizepicks_lines": self._generate_prizepicks_lines(stats["pts"], stats["reb"], stats["ast"]),
+                "is_fallback": True  # Flag to indicate this is fallback data
+            }
+            fallback_players.append(player_data)
+        
+        print(f"✅ Created {len(fallback_players)} fallback players for {team_name}")
+        return fallback_players
 
 
 # Create singleton instance

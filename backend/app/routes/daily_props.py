@@ -9,6 +9,7 @@ from app.services.popular_players import popular_players_service
 from app.services.paper_betting import PaperBettingService
 from app.services.game_simulator import game_simulator
 from app.services.nba_stats import NBAStatsService
+from app.services.cache_warmer import cache_warmer
 from datetime import datetime
 
 router = APIRouter(prefix="/api/daily-props", tags=["daily-props"])
@@ -84,27 +85,31 @@ def calculate_parlay_odds(probabilities: List[float], num_legs: int, bet_mode: s
     }
     
     if bet_mode == "flex":
-        # Flex pick: Can miss one leg and still win reduced payout
-        # Calculate probability of getting (n-1) correct
-        if num_legs >= 3:
-            # Probability of getting exactly (n-1) legs correct
-            # This is more complex, but roughly: combined_prob / avg_leg_prob
-            avg_prob = sum(probabilities) / len(probabilities)
-            flex_prob = combined_prob + (combined_prob / avg_prob) * (1 - avg_prob) * num_legs
-            flex_prob = min(0.95, flex_prob)  # Cap at 95%
-            
-            # Flex odds are lower than full parlay but higher than single bet
-            flex_multiplier = calculate_realistic_odds(flex_prob, "standard", 1.0) * 0.7
-            
+        # Flex pick payout table (fixed multipliers)
+        # Lineup | All Correct | Miss One | Miss Two
+        # 6 Picks: 25x, 2x (5/6), 0.4x (4/6)
+        # 5 Picks: 10x, 2x (4/5), 0.4x (3/5)
+        # 4 Picks: 6x, 1.5x (3/4), N/A
+        # 3 Picks: 3x, 1x (2/3), N/A
+        
+        flex_payouts = {
+            6: {"all": 25.0, "miss_one": 2.0, "miss_two": 0.4},
+            5: {"all": 10.0, "miss_one": 2.0, "miss_two": 0.4},
+            4: {"all": 6.0, "miss_one": 1.5, "miss_two": 0.0},
+            3: {"all": 3.0, "miss_one": 1.0, "miss_two": 0.0}
+        }
+        
+        if num_legs >= 3 and num_legs <= 6:
+            payouts = flex_payouts[num_legs]
             result["flex_mode"] = True
-            result["flex_probability"] = round(flex_prob, 4)
-            result["full_win_multiplier"] = calculate_realistic_odds(combined_prob, "standard", 1.0)
-            result["flex_win_multiplier"] = round(flex_multiplier, 2)
-            result["flex_rules"] = f"Win {num_legs-1} out of {num_legs} picks for reduced payout"
+            result["full_win_multiplier"] = payouts["all"]
+            result["flex_win_multiplier"] = payouts["miss_one"]
+            result["flex_miss_two_multiplier"] = payouts["miss_two"]
+            result["flex_rules"] = f"All correct: {payouts['all']}x | Miss 1: {payouts['miss_one']}x" + (f" | Miss 2: {payouts['miss_two']}x" if payouts['miss_two'] > 0 else "")
         else:
-            # Need at least 3 legs for flex
+            # Need 3-6 legs for flex
             result["flex_mode"] = False
-            result["flex_error"] = "Flex picks require at least 3 legs"
+            result["flex_error"] = "Flex picks require 3-6 legs"
             result["standard_multiplier"] = calculate_realistic_odds(combined_prob, "standard", 1.0)
     else:
         # Standard parlay
@@ -224,6 +229,8 @@ async def get_todays_props():
     - Are ACTIVE (not injured/out)
     - Have played within the last 7 days
     
+    Uses cache warmer for fast response (5-minute TTL)
+    
     Returns:
         - List of popular players (LeBron, Curry, Giannis, etc.)
         - Season averages for each stat
@@ -231,7 +238,8 @@ async def get_todays_props():
         - Opponent and game info
     """
     try:
-        players = await popular_players_service.get_popular_players_for_today()
+        # Use cache warmer for fast response
+        players = await cache_warmer.get_today_players()
         
         return {
             "date": datetime.now().strftime("%Y-%m-%d"),
@@ -252,12 +260,25 @@ async def get_tomorrows_props():
     - Are ACTIVE (not injured/out)
     - Have played within the last 7 days
     
+    Uses cache warmer for fast response (5-minute TTL)
+    
     Returns:
         - List of popular players
         - Season averages
         - Suggested betting lines
         - Opponent and game info
     """
+    try:
+        # Use cache warmer for fast response
+        players = await cache_warmer.get_tomorrow_players()
+        
+        return {
+            "date": (datetime.now()).strftime("%Y-%m-%d"),
+            "count": len(players),
+            "players": players
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching tomorrow's props: {str(e)}")
 
 
 @router.post("/simulate-bet")
@@ -400,22 +421,28 @@ async def _simulate_bet_leg(bet):
             else:
                 season_avg_value = 0
         
+        def round_half(v: float) -> float:
+            try:
+                return round(v * 2) / 2
+            except Exception:
+                return v
+
         return {
             "player_name": bet.player_name,
             "prop_type": bet.prop_type,
             "line": bet.line,
             "pick": bet.pick,
-            "simulated_value": round(simulated_value, 1),
+            "simulated_value": round_half(simulated_value),
             "won": won,
             "probability": probability,
-            "season_average": round(season_avg_value, 1),
+            "season_average": round_half(season_avg_value),
             "simulation_details": {
-                "points": round(simulation_result.points, 1),
-                "rebounds": round(simulation_result.rebounds, 1),
-                "assists": round(simulation_result.assists, 1),
-                "three_pointers_made": round(simulation_result.three_pointers_made, 1),
-                "steals": round(simulation_result.steals, 1),
-                "blocks": round(simulation_result.blocks, 1),
+                "points": round_half(getattr(simulation_result, 'points', 0)),
+                "rebounds": round_half(getattr(simulation_result, 'rebounds', 0)),
+                "assists": round_half(getattr(simulation_result, 'assists', 0)),
+                "three_pointers_made": round_half(getattr(simulation_result, 'three_pointers_made', 0)),
+                "steals": round_half(getattr(simulation_result, 'steals', 0)),
+                "blocks": round_half(getattr(simulation_result, 'blocks', 0)),
             }
         }
         
@@ -605,25 +632,32 @@ async def place_parlay_with_simulation(parlay: MultiPropBet):
         bet_result = "loss"
         
         if parlay.bet_mode == "flex":
-            # Flex pick: Can miss one leg
-            if num_legs < 3:
+            # Flex pick: Fixed payout table
+            if num_legs < 3 or num_legs > 6:
                 raise HTTPException(
                     status_code=400,
-                    detail="Flex picks require at least 3 legs"
+                    detail="Flex picks require 3-6 legs"
                 )
             
-            if all_won:
-                # Full win: Use full multiplier
+            num_losses = num_legs - num_wins
+            
+            if num_losses == 0:
+                # All correct
                 multiplier = odds_info["full_win_multiplier"]
                 payout = parlay.total_wager * multiplier
                 bet_result = "full_win"
-            elif num_wins >= (num_legs - 1):
-                # Flex win: Won n-1 legs
+            elif num_losses == 1:
+                # Miss one
                 multiplier = odds_info["flex_win_multiplier"]
                 payout = parlay.total_wager * multiplier
-                bet_result = "flex_win"
+                bet_result = "flex_win_miss_one"
+            elif num_losses == 2 and odds_info.get("flex_miss_two_multiplier", 0) > 0:
+                # Miss two (only for 5 and 6 leg parlays)
+                multiplier = odds_info["flex_miss_two_multiplier"]
+                payout = parlay.total_wager * multiplier
+                bet_result = "flex_win_miss_two"
             else:
-                # Lost (missed more than 1)
+                # Lost (missed too many)
                 payout = 0
                 bet_result = "loss"
                 
@@ -755,3 +789,55 @@ async def reset_user_balance(username: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error resetting balance: {str(e)}")
+
+
+# ============================================================================
+# CACHE MANAGEMENT ENDPOINTS
+# ============================================================================
+
+@router.get("/cache/stats")
+async def get_cache_stats():
+    """
+    Get cache statistics and status
+    
+    Returns:
+    - Cache warmup status
+    - Cache TTL
+    - Cached keys and their ages
+    - Number of players in each cache
+    """
+    return cache_warmer.get_cache_stats()
+
+
+@router.post("/cache/refresh")
+async def refresh_cache():
+    """
+    Manually trigger cache refresh for today and tomorrow
+    
+    Useful for:
+    - Forcing fresh data after game updates
+    - Clearing stale cache
+    - Testing cache warmup
+    """
+    try:
+        await cache_warmer.warmup_cache()
+        return {
+            "message": "Cache refresh triggered successfully",
+            "stats": cache_warmer.get_cache_stats()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing cache: {str(e)}")
+
+
+@router.post("/cache/clear")
+async def clear_cache():
+    """
+    Clear all cached data
+    
+    Next request will trigger fresh fetch from NBA API
+    """
+    cache_warmer.clear_cache()
+    return {
+        "message": "Cache cleared successfully",
+        "stats": cache_warmer.get_cache_stats()
+    }

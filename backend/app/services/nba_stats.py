@@ -52,11 +52,11 @@ class NBAStatsService:
             'Connection': 'keep-alive',
         }
         self._last_request_time = 0
-        self._min_request_interval = 0.6  # Increased to 600ms between requests to avoid rate limiting
+        self._min_request_interval = 1.2  # Increased to 1.2 seconds between requests to avoid rate limiting
         
         # Add simple in-memory cache with timestamps
         self._cache = {}
-        self._cache_ttl = 300  # Cache for 5 minutes (300 seconds)
+        self._cache_ttl = 600  # Cache for 10 minutes (600 seconds) - longer cache to reduce API calls
         
     async def _rate_limit(self):
         """Enforce rate limiting between API calls"""
@@ -149,8 +149,8 @@ class NBAStatsService:
             # Add delay to avoid rate limiting
             await self._rate_limit()
             
-            # Use nba_api library to get game log with increased timeout
-            gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=season, timeout=60)
+            # Use nba_api library to get game log with reduced timeout
+            gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=season, timeout=10)
             df = gamelog.get_data_frames()[0]
             
             if df.empty:
@@ -219,8 +219,8 @@ class NBAStatsService:
             # Add delay to avoid rate limiting
             await self._rate_limit()
             
-            # Use career stats endpoint to get season averages
-            career_stats = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=60)
+            # Use career stats endpoint to get season averages with reduced timeout
+            career_stats = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=10)
             df = career_stats.get_data_frames()[0]  # SeasonTotalsRegularSeason
             
             if df.empty:
