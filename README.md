@@ -302,7 +302,7 @@ Built with ❤️ for the PrizePicks "Next-Gen Game Flow" Hackathon
 npm install --prefix frontend
 pip install -r backend/requirements.txt
 npm run dev --prefix frontend &
-uvicorn app.main:app --reload --app-dir backend
+python3 run.py
 ```
 
-Visit `http://localhost:5173` and start building your lineup! 🚀
+
