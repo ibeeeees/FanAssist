@@ -4,6 +4,7 @@ import { useTheme } from './context/ThemeContext'
 import CategoryFilter from './components/CategoryFilter'
 import PlayerCardComponent from './components/PlayerCardComponent'
 import { ScrollTriggeredAnimation } from './components/ScrollTriggeredAnimation'
+import { WelcomePopup } from './components/WelcomePopup'
 import playersData from './data/players.json'
 
 interface SelectedPlayer {
@@ -78,7 +79,10 @@ function App() {
       </div>
 
       {/* Player Cards Grid */}
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto relative">
+        {/* Welcome Popup */}
+        <WelcomePopup triggerDelay={2000} />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {playersData.players.map((player, index) => (
             <ScrollTriggeredAnimation
