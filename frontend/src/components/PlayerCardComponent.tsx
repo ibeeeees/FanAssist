@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { ArrowUp, ArrowDown } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
+import PlayerStatsModal from './PlayerStatsModal'
 
 interface PlayerProjections {
   points: number;
@@ -103,6 +104,7 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
   const [imageAttempt, setImageAttempt] = useState(0);
+  const [showStatsModal, setShowStatsModal] = useState(false);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
@@ -219,12 +221,32 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     }
   };
 
+  // Generate mock last 5 games data (TODO: Replace with real API data)
+  const generateMockGameLogs = () => {
+    return Array.from({ length: 5 }, (_, i) => {
+      const variance = (Math.random() * 8 - 4);
+      const gameStatValue = roundToHalf(roundedStatValue + variance);
+      return {
+        game_date: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        opponent: ['LAL', 'BOS', 'GSW', 'MIA', 'PHX'][i],
+        stat_value: gameStatValue,
+        line_value: roundedStatValue,
+        result: (gameStatValue > roundedStatValue ? 'over' : 'under') as 'over' | 'under'
+      };
+    });
+  };
+
   return (
-    <div className={`player-card ${selection ? 'active' : ''}`}>
+    <>
+      <div className={`player-card ${selection ? 'active' : ''}`}>
         {/* Main Content Area */}
         <div className="flex flex-col items-center justify-center p-1.5 overflow-hidden grow">
-            {/* Player Photo - Simple and contained */}
-            <div className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40">
+            {/* Player Photo - Clickable */}
+            <button 
+              onClick={() => setShowStatsModal(true)}
+              className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40 hover:border-accent1 hover:scale-110 transition-all cursor-pointer"
+              title="View last 5 games"
+            >
               <img 
                 src={getImageUrl()}
                 alt={player.name}
@@ -232,7 +254,7 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 className="w-full h-full object-cover"
                 loading="lazy"
               />
-            </div>
+            </button>
 
             {/* Position */}
             <div className="text-[9px] font-semibold text-text-muted shrink-0 mb-0.5">
@@ -276,7 +298,19 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
                 <ArrowUp size={16} className="inline-block mr-[5px]" /> More
             </button>
         </div>
-    </div>
+      </div>
+
+      {/* Stats Modal */}
+      <PlayerStatsModal
+        isOpen={showStatsModal}
+        onClose={() => setShowStatsModal(false)}
+        playerName={player.name}
+        playerImage={getImageUrl()}
+        statCategory={`${category.label} - ${roundedStatValue.toFixed(1)}`}
+        lineValue={roundedStatValue}
+        lastFiveGames={generateMockGameLogs()}
+      />
+    </>
   )
 }
 

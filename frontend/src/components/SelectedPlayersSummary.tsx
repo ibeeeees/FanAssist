@@ -46,69 +46,67 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
       </button>
     
 
-      {/* Summary Panel - Compact Minimal */}
+      {/* Summary Panel - Ultra Minimal */}
       {isOpen && (
-        <div className="bg-surface rounded-lg border border-card-border shadow-xl w-64">
-          {/* Compact Header */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-card-border">
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-text">Lineup</h2>
-              <span className="text-xs font-bold text-white bg-accent1 px-1.5 py-0.5 rounded">
+        <div className="bg-surface/95 backdrop-blur-sm rounded-lg border border-card-border/50 shadow-2xl w-56">
+          {/* Minimal Header */}
+          <div className="flex items-center justify-between px-2.5 py-1.5 border-b border-card-border/50">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-xs font-bold text-text">Lineup</h2>
+              <span className="text-[10px] font-bold text-white bg-accent1 px-1 py-0.5 rounded-sm">
                 {selectedPlayers.length}
               </span>
             </div>
             {selectedPlayers.length > 0 && (
               <button 
                 onClick={handleClearAll}
-                className="text-xs font-medium text-text-muted hover:text-red-500 transition-colors"
+                className="text-[10px] font-medium text-text-muted hover:text-red-500 transition-colors"
               >
                 Clear
               </button>
             )}
           </div>
 
-          {/* Compact Player List - Scrollable */}
+          {/* Ultra Compact Player List */}
           {selectedPlayers.length > 0 ? (
-            <div className="flex flex-col max-h-[300px] overflow-y-auto divide-y divide-card-border/30">
+            <div className="flex flex-col max-h-[280px] overflow-y-auto">
               {selectedPlayers.map((sp, index) => (
                 <div 
                   key={`${sp.playerId}-${index}`}
-                  className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 hover:bg-card-bg/30 transition-colors"
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-1.5 px-2.5 py-1.5 hover:bg-card-bg/20 transition-colors border-b border-card-border/20 last:border-b-0"
                 >
-                  {/* Column 1: Headshot FIRST */}
-                  <img src={sp.image} alt={sp.playerName} className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-card-border" />
+                  {/* Headshot */}
+                  <img src={sp.image} alt={sp.playerName} className="w-7 h-7 rounded-full flex-shrink-0" />
 
-                  {/* Column 2: Name and Stats */}
-                  <div className="min-w-0 flex flex-col">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-semibold text-xs text-text truncate">{sp.playerName}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-[10px] mt-0.5">
+                  {/* Info - Super Compact */}
+                  <div className="min-w-0">
+                    <div className="font-semibold text-[11px] text-text truncate leading-tight">{sp.playerName}</div>
+                    <div className="flex items-center gap-0.5 text-[9px] leading-tight">
                       <span className={`font-bold ${sp.selection === 'more' ? 'text-green-500' : 'text-red-500'}`}>
                         {sp.selection === 'more' ? 'O' : 'U'} {sp.statValue.toFixed(1)}
                       </span>
-                      <span className="text-text-muted/70 truncate">{sp.category}</span>
+                      <span className="text-text-muted/60">{sp.category}</span>
                     </div>
                   </div>
                   
-                  {/* Column 3: O/U Toggle Buttons */}
-                  <div className="flex gap-1 flex-shrink-0">
+                  {/* Micro Toggle */}
+                  <div className="flex gap-0.5 flex-shrink-0">
                     <button
                       onClick={() => handleToggleSelection(index, 'more')}
-                      className={`w-6 h-6 rounded text-[10px] font-bold transition-all ${
+                      className={`w-5 h-5 rounded text-[9px] font-bold transition-all ${
                         sp.selection === 'more'
                           ? 'bg-green-500 text-white'
-                          : 'bg-card-bg text-text-muted hover:bg-green-500/20'
+                          : 'bg-card-bg/50 text-text-muted hover:bg-green-500/20'
                       }`}
                     >
                       O
                     </button>
                     <button
                       onClick={() => handleToggleSelection(index, 'less')}
-                      className={`w-6 h-6 rounded text-[10px] font-bold transition-all ${
+                      className={`w-5 h-5 rounded text-[9px] font-bold transition-all ${
                         sp.selection === 'less'
                           ? 'bg-red-500 text-white'
-                          : 'bg-card-bg text-text-muted hover:bg-red-500/20'
+                          : 'bg-card-bg/50 text-text-muted hover:bg-red-500/20'
                       }`}
                     >
                       U
@@ -118,16 +116,15 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center p-4 text-text-muted">
-              <CircleSlash className="w-6 h-6 mb-1.5" />
-              <span className='text-xs font-medium'>No Players Selected</span>
-              <p className='text-[10px] font-light'>Build your lineup!</p>
+            <div className="flex flex-col items-center py-3 px-2 text-text-muted">
+              <CircleSlash className="w-5 h-5 mb-1" />
+              <span className='text-[10px] font-medium'>No Players</span>
             </div>
           )}
 
           {/* Betting Panel - Only show when players are selected */}
           {selectedPlayers.length > 0 && (
-            <div className="mt-2">
+            <div className="mt-1">
               <BettingPanel 
                 selectedPlayers={selectedPlayers}
                 onClearAll={handleClearAll}
