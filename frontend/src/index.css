@@ -228,8 +228,8 @@ a:hover {
   }
 
   .theme-toggle.light {
-    background-color: var(--color-accent1) !important;
-    border-color: var(--color-accent1) !important;
+    background-color: var(--color-accent2) !important;
+    border-color: var(--color-accent2) !important;
     color: #000000 !important;
   }
 
