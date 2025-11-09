@@ -297,12 +297,12 @@ export const WelcomePopup = ({
                       The large number displays the projected value for the selected category
                     </li>
                     <li style={{ marginBottom: "8px" }}>
-                      Select whether you think the player will score more or less than the projection
+                      Select whether you think the player will score More or Less than the projection
                     </li>
                   </ul>
 
                   <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
-                    When selecting players, you'll notice a demon or goblin icon in some of the cards. Demons and goblins are non-standard payouts, where demons pay more, but are riskier and less likely to win, and vice versa for goblins.
+                    When selecting players, you'll notice a demon or goblin icon in some of the cards. Demons and goblins are non-standard payouts, where demons pay more, but are riskier and less likely to win, and vice versa for goblins. If selected, you'll be forced to pick the More option.
                   </p>
                 </div>
               </div>
