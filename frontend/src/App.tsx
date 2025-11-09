@@ -6,6 +6,7 @@ import PlayerCardComponent from './components/PlayerCardComponent'
 import { ScrollTriggeredAnimation } from './components/ScrollTriggeredAnimation'
 import { WelcomePopup } from './components/WelcomePopup'
 import playersData from './data/players.json'
+import {Sun, Moon} from 'lucide-react'
 
 interface SelectedPlayer {
   playerId: string;
@@ -42,20 +43,15 @@ function App() {
     <div className="min-h-screen bg-bg p-3">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-3">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl font-bold text-text">FanAssist</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-4xl font-medium text-text">FanAssist</h1>
           <div className="flex items-center gap-4">
             <button 
               onClick={toggleTheme}
-              className="px-4 py-2 rounded-lg font-semibold transition-all"
-              style={{
-                backgroundColor: 'var(--btn-default)',
-                color: 'var(--btn-default-text)'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-default-hover)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--btn-default)'}
+              className={`theme-toggle ${theme}`}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
             >
-              {theme === 'dark' ? '🌙 Dark' : '☀️ Light'} Mode
+              {theme === 'dark' ? <Moon className="w-2 h-2" /> : <Sun className="w-2 h-2" />}
             </button>
           </div>
         </div>
