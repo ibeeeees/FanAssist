@@ -7,15 +7,8 @@ import { ScrollTriggeredAnimation } from './components/ScrollTriggeredAnimation'
 import { WelcomePopup } from './components/WelcomePopup'
 import SelectedPlayersSummary from './components/SelectedPlayersSummary'
 import playersData from './data/players.json'
-import {Sun, Moon} from 'lucide-react'
-
-interface SelectedPlayer {
-  playerId: string;
-  playerName: string;
-  category: string;
-  selection: 'more' | 'less';
-  statValue: number;
-}
+import { Sun, Moon } from 'lucide-react'
+import type { SelectedPlayer } from './types'
 
 function App() {
   const [selectedCategory, setSelectedCategory] = useState('Popular')
@@ -78,12 +71,12 @@ function App() {
         />
       </div>
 
-      {/* Player Picks */}
-      <div className="">
 
+      {/* Player Picks */}
+      <div className="flex flex-row gap-1">
         {/* Left side */}
         <div className="">
-          
+        
           {/* Player Cards Grid */}
           <div className="max-w-7xl mx-auto relative">
             {/* Welcome Popup */}
@@ -100,6 +93,7 @@ function App() {
                   <PlayerCardComponent
                     player={player}
                     selectedCategory={selectedCategory}
+                    selectedPlayers={selectedPlayers}
                     setSelectedPlayers={setSelectedPlayers}
                   />
                 </ScrollTriggeredAnimation>
@@ -110,7 +104,10 @@ function App() {
         {/* Right Side */}
         <div className="">
           {/* Selected Players Summary */}
-          <SelectedPlayersSummary selectedPlayers={selectedPlayers} />
+          <SelectedPlayersSummary 
+            selectedPlayers={selectedPlayers}
+            setSelectedPlayers={setSelectedPlayers}
+          />
         </div>
       </div>
     </div>

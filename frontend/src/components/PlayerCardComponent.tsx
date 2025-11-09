@@ -1,7 +1,6 @@
-import React, { useState } from 'react'
-// import icons from lucide-react
-import { ArrowUp, ArrowDown } from 'lucide-react';
- 
+import React, { useState, useEffect } from 'react'
+import { ArrowUp, ArrowDown } from 'lucide-react'
+import type { SelectedPlayer } from '../types'
 
 interface PlayerProjections {
   points: number;
@@ -57,17 +56,10 @@ interface Player {
   injuryStatus: string | null;
 }
 
-interface SelectedPlayer {
-  playerId: string;
-  playerName: string;
-  category: string;
-  selection: 'more' | 'less';
-  statValue: number;
-}
-
 interface PlayerCardProps {
   player: Player;
   selectedCategory?: string;
+  selectedPlayers: SelectedPlayer[];
   setSelectedPlayers: React.Dispatch<React.SetStateAction<SelectedPlayer[]>>;
 }
 
@@ -108,8 +100,18 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
   'Two Pointers Made': { key: 'twoPointersMade', label: '2-PT Made' },
 };
 
-const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', setSelectedPlayers }) => {
+const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
+
+  // Sync selection state with selectedPlayers array
+  useEffect(() => {
+    const selectedPlayer = selectedPlayers.find(p => p.playerId === player.id);
+    if (selectedPlayer) {
+      setSelection(selectedPlayer.selection);
+    } else {
+      setSelection(null);
+    }
+  }, [selectedPlayers, player.id]);
 
   const {
     name,
@@ -140,7 +142,14 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
         // Add new entry
         return [...filtered, {
           playerId: player.id,
+          image: player.image,
           playerName: name,
+          teamAbbr: player.teamAbbr,
+          position: player.position,
+          gameLocation: player.gameLocation,
+          opponentAbbr: player.opponentAbbr,
+          gameDay: player.gameDay,
+          gameTime: player.gameTime,
           category: selectedCategory,
           selection: type,
           statValue: statValue
