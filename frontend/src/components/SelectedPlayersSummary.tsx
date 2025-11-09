@@ -138,7 +138,7 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
 
           {selectedPlayers.length === 0 ? (
             /* Empty State */
-            <div className="flex flex-col items-center justify-center py-12 text-text-muted flex-1">
+            <div className="flex flex-row items-center justify-center py-12 text-text-muted flex-1">
               <CircleSlash className="w-12 h-12 mb-3 opacity-50" />
               <span className="mb-1 font-medium text-sm">No Players Selected</span>
               <p className="font-light text-xs">Start building your lineup!</p>
@@ -288,39 +288,14 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
               {/* Fixed Form Section at Bottom */}
               <div className="border-t border-card-border bg-card-bg shrink-0">
                 <form onSubmit={handleSubmit} className="p-3">
-                  {/* Demon/Goblin Info Banner */}
-                  {(demonCount > 0 || goblinCount > 0) && (
-                    <div className="mb-2 p-2 rounded-lg bg-surface border border-card-border">
-                      <div className="flex items-center gap-2 mb-1">
-                        {demonCount > 0 && (
-                          <div className="flex items-center gap-1 text-[10px]">
-                            <span className="bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">😈 {demonCount}</span>
-                            <span className="text-text-muted">Demon{demonCount > 1 ? 's' : ''}</span>
-                          </div>
-                        )}
-                        {goblinCount > 0 && (
-                          <div className="flex items-center gap-1 text-[10px]">
-                            <span className="bg-green-600 text-white px-1.5 py-0.5 rounded font-bold">🤢 {goblinCount}</span>
-                            <span className="text-text-muted">Goblin{goblinCount > 1 ? 's' : ''}</span>
-                          </div>
-                        )}
-                      </div>
-                      {hasDemonOrGoblin && (
-                        <p className="text-[9px] text-orange-500 italic">
-                          ⚠️ Promotions cannot be applied to lineups with Demons or Goblins
-                        </p>
-                      )}
-                    </div>
-                  )}
-                  
                   {/* Entry Amount and Potential Payout */}
-                  <div className="grid grid-cols-2 gap-2 mb-2">
+                  <div className="grid grid-cols-2 gap-2 mb-1">
                     {/* Entry Amount */}
-                    <div className="flex flex-col">
+                    <div className="flex flex-co l">
                       <label htmlFor="entryAmount" className="text-left block text-[10px] font-semibold text-text-muted mb-1">
                         Entry Amount
                       </label>
-                      <div className="relative">
+                      <div className="relative px-1 py-1">
                         <span className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted font-medium text-xs">$</span>
                         <input
                           id="entryAmount"
@@ -340,9 +315,9 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
                       <label className="text-left block text-[10px] font-semibold text-text-muted mb-1">
                         Potential Payout
                       </label>
-                      <div className="w-full px-2 py-1.5 text-xs bg-surface text-text border border-card-border rounded-lg">
+                      <div className="w-full px-1 py-1 text-xs bg-surface text-text border border-card-border rounded-lg">
                         {payoutResult ? (
-                          <div className="flex items-baseline gap-1">
+                          <div className="flex items-baseline gap-0.5">
                             <span className="font-bold text-accent1 text-sm">
                               {payoutResult.multiplier}x
                             </span>
@@ -373,9 +348,7 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
                     className={`w-full p-1 rounded-lg font-bold text-xs transition-all ${
                       selectedPlayers.length > 0 && 
                       ((playType === 'power' && selectedPlayers.length >= 2) || (playType === 'flex' && selectedPlayers.length >= 3))
-                        ? playType === 'power'
-                          ? 'bg-accent1 text-black hover:bg-accent1/90 shadow-md hover:shadow-lg'
-                          : 'bg-accent2 text-white hover:bg-accent2/90 shadow-md hover:shadow-lg'
+                        ? 'bg-accent2 text-white hover:bg-accent2/90 shadow-md hover:shadow-lg'
                         : 'bg-surface text-text-muted cursor-not-allowed border border-card-border opacity-50'
                     }`}
                   >
