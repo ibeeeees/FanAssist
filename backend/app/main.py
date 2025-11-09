@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import players, props, analysis, betting, beginner, simulation, ml_simulation, schedule
+from app.routes import players, props, analysis, betting, beginner, simulation, ml_simulation, schedule, daily_props
 from app.config import settings
 
 app = FastAPI(
@@ -27,12 +27,13 @@ app.include_router(beginner.router, prefix="/api/beginner", tags=["beginner"])
 app.include_router(simulation.router)
 app.include_router(ml_simulation.router)
 app.include_router(schedule.router)
+app.include_router(daily_props.router)
 
 @app.get("/")
 async def root():
     return {
         "message": "FanAssist NBA Props & Paper Betting API", 
-        "version": "1.0.0",
+        "version": "2.0.0",
         "features": [
             "NBA player stats and last 5 games analysis",
             "AI-powered prop recommendations", 
@@ -41,7 +42,18 @@ async def root():
             "Beginner-friendly analysis",
             "Game simulation",
             "Simulate games and bets to see win probabilities",
+            "Daily props for popular players",
+            "Live bet simulation with paper money",
             "Leaderboards and analytics"
+        ],
+        "daily_props_endpoints": [
+            "GET /api/daily-props/today - Get popular players with PrizePicks lines for today",
+            "GET /api/daily-props/tomorrow - Get popular players with PrizePicks lines for tomorrow",
+            "POST /api/daily-props/simulate-bet - Simulate a single prop bet",
+            "POST /api/daily-props/place-bet - Place bet with paper money and see if you won",
+            "POST /api/daily-props/place-parlay - Place multi-leg parlay with simulation",
+            "GET /api/daily-props/balance/{username} - Check paper money balance",
+            "POST /api/daily-props/reset-balance/{username} - Reset balance to $10,000"
         ],
         "simulation_endpoints": [
             "POST /api/simulation/single-game",

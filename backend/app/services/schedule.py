@@ -11,11 +11,31 @@ class NBAScheduleService:
     """Service to get NBA game schedules"""
     
     def __init__(self):
-        pass
+        # Add simple in-memory cache with timestamps
+        self._cache = {}
+        self._cache_ttl = 600  # Cache for 10 minutes (600 seconds) - games don't change often
+        
+    def _get_from_cache(self, cache_key: str):
+        """Get value from cache if not expired"""
+        import time
+        if cache_key in self._cache:
+            value, timestamp = self._cache[cache_key]
+            if time.time() - timestamp < self._cache_ttl:
+                print(f"  ✅ Using cached games for {cache_key}")
+                return value
+            else:
+                # Expired, remove from cache
+                del self._cache[cache_key]
+        return None
+    
+    def _set_cache(self, cache_key: str, value):
+        """Store value in cache with timestamp"""
+        import time
+        self._cache[cache_key] = (value, time.time())
     
     def get_games_for_date(self, date: datetime) -> List[Dict]:
         """
-        Get all NBA games for a specific date
+        Get all NBA games for a specific date (with caching)
         
         Returns list of games with:
         - game_id
@@ -30,10 +50,18 @@ class NBAScheduleService:
             # Format date for NBA API (YYYY-MM-DD format works)
             date_str = date.strftime('%Y-%m-%d')
             
+            # Check cache first
+            cache_key = f"games_{date_str}"
+            cached_result = self._get_from_cache(cache_key)
+            if cached_result is not None:
+                return cached_result
+            
             print(f"Fetching games for date: {date_str}")
             
-            # Get scoreboard for the date
-            scoreboard = scoreboardv2.ScoreboardV2(game_date=date_str)
+            # Get scoreboard for the date with timeout
+            import time
+            time.sleep(0.5)  # Add delay before API call
+            scoreboard = scoreboardv2.ScoreboardV2(game_date=date_str, timeout=30)
             games_df = scoreboard.get_data_frames()[0]  # GameHeader
             line_score_df = scoreboard.get_data_frames()[1]  # LineScore
             
@@ -83,6 +111,9 @@ class NBAScheduleService:
                     continue
             
             print(f"Returning {len(games)} games")
+            
+            # Cache the result
+            self._set_cache(cache_key, games)
             return games
             
         except Exception as e:

@@ -52,7 +52,11 @@ class NBAStatsService:
             'Connection': 'keep-alive',
         }
         self._last_request_time = 0
-        self._min_request_interval = 0.25  # Minimum 250ms between requests (faster with parallel batching)
+        self._min_request_interval = 0.6  # Increased to 600ms between requests to avoid rate limiting
+        
+        # Add simple in-memory cache with timestamps
+        self._cache = {}
+        self._cache_ttl = 300  # Cache for 5 minutes (300 seconds)
         
     async def _rate_limit(self):
         """Enforce rate limiting between API calls"""
@@ -61,6 +65,22 @@ class NBAStatsService:
         if time_since_last < self._min_request_interval:
             await asyncio.sleep(self._min_request_interval - time_since_last)
         self._last_request_time = time.time()
+    
+    def _get_from_cache(self, cache_key: str) -> Optional[Any]:
+        """Get value from cache if not expired"""
+        if cache_key in self._cache:
+            value, timestamp = self._cache[cache_key]
+            if time.time() - timestamp < self._cache_ttl:
+                print(f"  ✅ Using cached data for {cache_key}")
+                return value
+            else:
+                # Expired, remove from cache
+                del self._cache[cache_key]
+        return None
+    
+    def _set_cache(self, cache_key: str, value: Any):
+        """Store value in cache with timestamp"""
+        self._cache[cache_key] = (value, time.time())
     
     async def get_player_info(self, player_name: str) -> Optional[PlayerInfo]:
         """Get player information by name using nba_api - searches both active and inactive players"""
@@ -116,12 +136,18 @@ class NBAStatsService:
             print(f"Error fetching player info: {e}")
             return None
     
-    @retry_with_backoff(max_retries=2, initial_delay=1)
+    @retry_with_backoff(max_retries=2, initial_delay=2)
     async def get_player_game_log(self, player_id: int, season: str = "2024-25", last_n_games: int = 10) -> List[GameStats]:
-        """Get recent game logs for a player using nba_api with retry logic"""
+        """Get recent game logs for a player using nba_api with retry logic and caching"""
         try:
-            # Add small delay to avoid rate limiting (reduced for batching)
-            await asyncio.sleep(0.1)
+            # Check cache first
+            cache_key = f"gamelog_{player_id}_{season}_{last_n_games}"
+            cached_result = self._get_from_cache(cache_key)
+            if cached_result is not None:
+                return cached_result
+            
+            # Add delay to avoid rate limiting
+            await self._rate_limit()
             
             # Use nba_api library to get game log with increased timeout
             gamelog = playergamelog.PlayerGameLog(player_id=player_id, season=season, timeout=60)
@@ -171,19 +197,27 @@ class NBAStatsService:
                 # Calculate fantasy score
                 game_stat.fantasy_score = game_stat.calculate_fantasy_score()
                 game_stats.append(game_stat)
-                
-                return game_stats
-                
+            
+            # Cache the result
+            self._set_cache(cache_key, game_stats)
+            return game_stats
+            
         except Exception as e:
             print(f"Error fetching game log: {e}")
             return []
     
     @retry_with_backoff(max_retries=3, initial_delay=2)
     async def get_player_season_averages(self, player_id: int, season: str = "2024-25") -> Optional[SeasonAverages]:
-        """Get season averages for a player using nba_api with retry logic"""
+        """Get season averages for a player using nba_api with retry logic and caching"""
         try:
-            # Add small delay to avoid rate limiting (reduced for batching)
-            await asyncio.sleep(0.15)
+            # Check cache first
+            cache_key = f"season_avg_{player_id}_{season}"
+            cached_result = self._get_from_cache(cache_key)
+            if cached_result is not None:
+                return cached_result
+            
+            # Add delay to avoid rate limiting
+            await self._rate_limit()
             
             # Use career stats endpoint to get season averages
             career_stats = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=60)
@@ -206,7 +240,7 @@ class NBAStatsService:
                 return None
             
             # Calculate per-game averages
-            return SeasonAverages(
+            season_avg = SeasonAverages(
                 player_id=player_id,
                 season=season,
                 games_played=games_played,
@@ -221,6 +255,10 @@ class NBAStatsService:
                 three_point_percentage=float(row['FG3_PCT']) if pd.notna(row.get('FG3_PCT')) else 0.0,
                 free_throw_percentage=float(row['FT_PCT']) if pd.notna(row.get('FT_PCT')) else 0.0
             )
+            
+            # Cache the result
+            self._set_cache(cache_key, season_avg)
+            return season_avg
                 
         except Exception as e:
             print(f"Error fetching season averages: {e}")
