@@ -154,8 +154,8 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
           </button>
         </div>
         <div className="flex items-center gap-1.5 mb-1">
-          <div className="p-0.5 bg-green-500/20 rounded">
-            <DollarSign className="w-3 h-3 text-green-500" />
+          <div className="flex items-center justify-center w-4 h-4 bg-green-500/20 rounded">
+            <DollarSign className="w-2.5 h-2.5 text-green-500" />
           </div>
           <span className="text-lg font-bold text-green-500">
             {balance !== null ? `$${balance.toFixed(2)}` : '...'}
@@ -211,15 +211,15 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
         <label className="block text-[10px] font-medium text-text mb-1">
           Wager
         </label>
-        <div className="relative">
-          <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 p-0.5 bg-green-500/20 rounded">
-            <DollarSign className="w-3 h-3 text-green-500" />
+        <div className="relative overflow-hidden">
+          <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-3.5 h-3.5 bg-green-500/20 rounded">
+            <DollarSign className="w-2 h-2 text-green-500" />
           </div>
           <input
             type="number"
             value={wagerAmount}
             onChange={(e) => setWagerAmount(e.target.value)}
-            className="w-full pl-8 pr-2 py-1 bg-card-bg border border-card-border rounded text-text font-semibold text-sm focus:outline-none focus:ring-1 focus:ring-accent1 focus:border-accent1 transition-all"
+            className="w-full pl-7 pr-2 py-1 bg-card-bg border border-card-border rounded text-text font-semibold text-sm focus:outline-none focus:ring-1 focus:ring-accent1 focus:border-accent1 transition-all"
             placeholder="50"
             min="1"
             step="1"

@@ -243,7 +243,10 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
         <div className="flex flex-col items-center justify-center p-1.5 overflow-hidden grow">
             {/* Player Photo - Clickable */}
             <button 
-              onClick={() => setShowStatsModal(true)}
+              onClick={() => {
+                console.log('🖱️ Headshot clicked!', player.name);
+                setShowStatsModal(true);
+              }}
               className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40 hover:border-accent1 hover:scale-110 transition-all cursor-pointer"
               title="View last 5 games"
             >

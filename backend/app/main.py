@@ -17,12 +17,12 @@ app = FastAPI(
 async def startup_event():
     """Warm up cache on server startup for fast initial response"""
     print("🚀 Server starting up...")
-    print("⚡ Cache warming disabled - data will load on-demand for faster startup")
+    print("⚡ Cache warming DISABLED - all data loads fresh on-demand for real-time updates")
     
-    # DISABLED: Cache warmer was causing NBA API timeouts on startup
-    # This makes the server start instantly and load data as needed
+    # DISABLED: Cache warmer for real-time data
+    # Data will load fresh on each request for most up-to-date information
     # asyncio.create_task(cache_warmer.warmup_cache())
-    # asyncio.create_task(cache_warmer.refresh_cache_periodically(300))
+    # asyncio.create_task(cache_warmer.refresh_cache_periodically(7200))
 
 # CORS middleware
 app.add_middleware(

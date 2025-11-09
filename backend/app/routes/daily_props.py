@@ -85,27 +85,31 @@ def calculate_parlay_odds(probabilities: List[float], num_legs: int, bet_mode: s
     }
     
     if bet_mode == "flex":
-        # Flex pick: Can miss one leg and still win reduced payout
-        # Calculate probability of getting (n-1) correct
-        if num_legs >= 3:
-            # Probability of getting exactly (n-1) legs correct
-            # This is more complex, but roughly: combined_prob / avg_leg_prob
-            avg_prob = sum(probabilities) / len(probabilities)
-            flex_prob = combined_prob + (combined_prob / avg_prob) * (1 - avg_prob) * num_legs
-            flex_prob = min(0.95, flex_prob)  # Cap at 95%
-            
-            # Flex odds are lower than full parlay but higher than single bet
-            flex_multiplier = calculate_realistic_odds(flex_prob, "standard", 1.0) * 0.7
-            
+        # Flex pick payout table (fixed multipliers)
+        # Lineup | All Correct | Miss One | Miss Two
+        # 6 Picks: 25x, 2x (5/6), 0.4x (4/6)
+        # 5 Picks: 10x, 2x (4/5), 0.4x (3/5)
+        # 4 Picks: 6x, 1.5x (3/4), N/A
+        # 3 Picks: 3x, 1x (2/3), N/A
+        
+        flex_payouts = {
+            6: {"all": 25.0, "miss_one": 2.0, "miss_two": 0.4},
+            5: {"all": 10.0, "miss_one": 2.0, "miss_two": 0.4},
+            4: {"all": 6.0, "miss_one": 1.5, "miss_two": 0.0},
+            3: {"all": 3.0, "miss_one": 1.0, "miss_two": 0.0}
+        }
+        
+        if num_legs >= 3 and num_legs <= 6:
+            payouts = flex_payouts[num_legs]
             result["flex_mode"] = True
-            result["flex_probability"] = round(flex_prob, 4)
-            result["full_win_multiplier"] = calculate_realistic_odds(combined_prob, "standard", 1.0)
-            result["flex_win_multiplier"] = round(flex_multiplier, 2)
-            result["flex_rules"] = f"Win {num_legs-1} out of {num_legs} picks for reduced payout"
+            result["full_win_multiplier"] = payouts["all"]
+            result["flex_win_multiplier"] = payouts["miss_one"]
+            result["flex_miss_two_multiplier"] = payouts["miss_two"]
+            result["flex_rules"] = f"All correct: {payouts['all']}x | Miss 1: {payouts['miss_one']}x" + (f" | Miss 2: {payouts['miss_two']}x" if payouts['miss_two'] > 0 else "")
         else:
-            # Need at least 3 legs for flex
+            # Need 3-6 legs for flex
             result["flex_mode"] = False
-            result["flex_error"] = "Flex picks require at least 3 legs"
+            result["flex_error"] = "Flex picks require 3-6 legs"
             result["standard_multiplier"] = calculate_realistic_odds(combined_prob, "standard", 1.0)
     else:
         # Standard parlay
@@ -628,25 +632,32 @@ async def place_parlay_with_simulation(parlay: MultiPropBet):
         bet_result = "loss"
         
         if parlay.bet_mode == "flex":
-            # Flex pick: Can miss one leg
-            if num_legs < 3:
+            # Flex pick: Fixed payout table
+            if num_legs < 3 or num_legs > 6:
                 raise HTTPException(
                     status_code=400,
-                    detail="Flex picks require at least 3 legs"
+                    detail="Flex picks require 3-6 legs"
                 )
             
-            if all_won:
-                # Full win: Use full multiplier
+            num_losses = num_legs - num_wins
+            
+            if num_losses == 0:
+                # All correct
                 multiplier = odds_info["full_win_multiplier"]
                 payout = parlay.total_wager * multiplier
                 bet_result = "full_win"
-            elif num_wins >= (num_legs - 1):
-                # Flex win: Won n-1 legs
+            elif num_losses == 1:
+                # Miss one
                 multiplier = odds_info["flex_win_multiplier"]
                 payout = parlay.total_wager * multiplier
-                bet_result = "flex_win"
+                bet_result = "flex_win_miss_one"
+            elif num_losses == 2 and odds_info.get("flex_miss_two_multiplier", 0) > 0:
+                # Miss two (only for 5 and 6 leg parlays)
+                multiplier = odds_info["flex_miss_two_multiplier"]
+                payout = parlay.total_wager * multiplier
+                bet_result = "flex_win_miss_two"
             else:
-                # Lost (missed more than 1)
+                # Lost (missed too many)
                 payout = 0
                 bet_result = "loss"
                 

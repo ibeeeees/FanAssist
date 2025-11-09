@@ -191,14 +191,20 @@ class PopularPlayersService:
         
         print(f"🔍 Fetching roster for {team_name} (ID: {team_id})...")
         
-        # Get team roster
+        # Get team roster with shorter timeout and delay
         try:
-            roster = commonteamroster.CommonTeamRoster(team_id=team_id)
+            import time
+            time.sleep(0.8)  # Add 800ms delay before each roster request
+            roster = commonteamroster.CommonTeamRoster(team_id=team_id, timeout=10)  # Reduced timeout to 10 seconds
             roster_df = roster.get_data_frames()[0]
             print(f"✅ Got roster for {team_name} - {len(roster_df)} players")
         except Exception as e:
-            print(f"❌ Error getting roster for team {team_id} ({team_name}): {e}")
-            print(f"⚠️  Skipping {team_name} - NBA API timeout")
+            error_msg = str(e)
+            if 'timeout' in error_msg.lower() or 'timed out' in error_msg.lower():
+                print(f"⏱️  Timeout getting roster for {team_name} - NBA API is slow, skipping")
+            else:
+                print(f"❌ Error getting roster for team {team_id} ({team_name}): {e}")
+            print(f"⚠️  Skipping {team_name} - continuing with other teams")
             # NO FALLBACK - Skip this team if API fails
             return []
         

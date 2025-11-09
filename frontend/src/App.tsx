@@ -15,20 +15,21 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('Popular')
   const { theme, toggleTheme } = useTheme()
   const [selectedPlayers, setSelectedPlayers] = useState<SelectedPlayer[]>([])
-  const [players, setPlayers] = useState<any[]>(playersData.players)
-  const [isLoading, setIsLoading] = useState(false)
+  const [players, setPlayers] = useState<any[]>([]) // Start with empty array - load live data on mount
+  const [isLoading, setIsLoading] = useState(true) // Start loading immediately
   const [useBackendData, setUseBackendData] = useState(true) // Live data enabled
   const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isLineupCollapsed, setIsLineupCollapsed] = useState(false)
 
-  // Fetch players from backend
+  // Fetch players from backend - LIVE DATA ONLY
   const fetchPlayersFromBackend = async () => {
     setIsLoading(true)
     setError(null)
     try {
-      console.log('Fetching players from backend...')
+      console.log('🔄 Fetching TODAY\'S players from backend...')
       const response = await getTodaysPlayers()
-      console.log('Backend response:', response)
+      console.log('📊 Backend response:', response)
       
       if (response.players && response.players.length > 0) {
         const transformedPlayers = response.players.map((player, index) => 
@@ -36,15 +37,16 @@ function App() {
         )
         setPlayers(transformedPlayers)
         setLastFetchTime(new Date())
-        console.log(`✅ Loaded ${transformedPlayers.length} players from backend`)
+        console.log(`✅ Loaded ${transformedPlayers.length} LIVE players playing today`)
       } else {
-        console.warn('No players returned from backend, using static data')
-        setPlayers(playersData.players)
+        console.warn('⚠️ No players returned from backend')
+        setError('No games scheduled for today. Check back later!')
+        setPlayers([])
       }
     } catch (error) {
-      console.error('Error fetching from backend:', error)
-      setError('Failed to load live data. Using cached data.')
-      setPlayers(playersData.players) // Fallback to static data
+      console.error('❌ Error fetching from backend:', error)
+      setError('Failed to load live data. Please refresh or check your connection.')
+      setPlayers([])
     } finally {
       setIsLoading(false)
     }
@@ -164,10 +166,10 @@ function App() {
       </div>
 
 
-      {/* Responsive Layout: Stack on mobile, side-by-side on desktop */}
-      <div className="flex flex-col md:flex-row gap-4 max-w-[1920px] mx-auto">
-        {/* Left side - Player Cards (takes most space on desktop) */}
-        <div className="flex-1 order-2 md:order-1">
+      {/* Responsive Layout: Dynamic based on lineup collapse state */}
+      <div className={`flex flex-col gap-4 max-w-[1920px] mx-auto ${isLineupCollapsed ? '' : 'md:flex-row'}`}>
+        {/* Left side - Player Cards (full width when collapsed, otherwise side-by-side) */}
+        <div className={`order-2 md:order-1 ${isLineupCollapsed ? 'w-full' : 'flex-1'}`}>
           {/* Player Cards Grid */}
           <div className="relative">
             {/* Welcome Popup */}
@@ -200,11 +202,12 @@ function App() {
           </div>
         </div>
 
-        {/* Right Side - Lineup Panel (sticky on desktop) */}
-        <aside className="w-full md:w-64 lg:w-72 xl:w-80 order-1 md:order-2 md:sticky md:top-4 md:self-start">
+        {/* Right Side - Lineup Panel (full width when collapsed) */}
+        <aside className={`order-1 md:order-2 ${isLineupCollapsed ? 'w-full' : 'w-full md:w-64 lg:w-72 xl:w-80'}`}>
           <SelectedPlayersSummary 
             selectedPlayers={selectedPlayers}
             setSelectedPlayers={setSelectedPlayers}
+            onCollapseChange={setIsLineupCollapsed}
           />
         </aside>
       </div>
