@@ -41,6 +41,15 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
     }
   }, [selectedPlayers, playType, entryAmount]);
 
+  // Check if lineup contains any demon or goblin picks
+  const hasDemonOrGoblin = useMemo(() => {
+    return selectedPlayers.some(p => p.modifier === 'demon' || p.modifier === 'goblin');
+  }, [selectedPlayers]);
+  
+  // Count demons and goblins
+  const demonCount = useMemo(() => selectedPlayers.filter(p => p.modifier === 'demon').length, [selectedPlayers]);
+  const goblinCount = useMemo(() => selectedPlayers.filter(p => p.modifier === 'goblin').length, [selectedPlayers]);
+
   // Auto-open when a player is selected for the first time (only if user hasn't manually closed it)
   useEffect(() => {
     if (selectedPlayers.length > 0 && !isOpen && !hasManuallyClosedWithPlayers) {
@@ -143,14 +152,28 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
                   {selectedPlayers.map((sp, index) => (
                     <div 
                       key={`${sp.playerId}-${index}`}
-                      className="flex items-start justify-between px-2.5 py-2 hover:bg-card-bg transition-colors gap-2"
+                      className={`flex items-start justify-between px-2.5 py-2 hover:bg-card-bg transition-colors gap-2 ${
+                        sp.modifier === 'demon' ? 'border-l-2 border-l-red-600' : 
+                        sp.modifier === 'goblin' ? 'border-l-2 border-l-green-600' : ''
+                      }`}
                     >
                       {/* Player Details */}
                       <div className="flex w-auto items-start gap-2 flex-1 min-w-0 whitespace-nowrap overflow-hidden">
                         <img src={sp.image} alt={sp.playerName} className="w-5 h-5 shrink-0" />
 
                         <div className="flex flex-col items-start flex-1 min-w-0">
-                          <span className="text-left font-semibold text-text text-xs leading-tight">{sp.playerName}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-left font-semibold text-text text-xs leading-tight">{sp.playerName}</span>
+                            {sp.modifier && (
+                              <span className={`text-[8px] px-1 py-0.5 rounded font-bold ${
+                                sp.modifier === 'demon' 
+                                  ? 'bg-red-600 text-white' 
+                                  : 'bg-green-600 text-white'
+                              }`}>
+                                {sp.modifier === 'demon' ? '😈' : '🤢'}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-left text-[10px] text-text-muted mt-0.5">
                             <span className="text-left bg-card-bg rounded text-[9px] font-medium">NBA</span>
                             {sp.teamAbbr} - {sp.position.join('/')}
@@ -159,7 +182,12 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
                             {sp.gameDay}, {sp.gameTime} {sp.gameLocation === 'home' ? 'vs' : '@'} {sp.opponentAbbr}
                           </span>
                           <div className="flex text-xs text-text gap-0.5 font-medium">
-                            <span className="text-left font-bold text">{sp.statValue.toFixed(1)}</span>
+                            <span className={`text-left font-bold ${
+                              sp.modifier === 'demon' ? 'text-red-500' : 
+                              sp.modifier === 'goblin' ? 'text-green-500' : ''
+                            }`}>
+                              {sp.statValue.toFixed(1)}
+                            </span>
                             <span className="text-left text-text-muted"> {sp.category}</span>
                           </div>
                         </div>
@@ -260,6 +288,31 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
               {/* Fixed Form Section at Bottom */}
               <div className="border-t border-card-border bg-card-bg shrink-0">
                 <form onSubmit={handleSubmit} className="p-3">
+                  {/* Demon/Goblin Info Banner */}
+                  {(demonCount > 0 || goblinCount > 0) && (
+                    <div className="mb-2 p-2 rounded-lg bg-surface border border-card-border">
+                      <div className="flex items-center gap-2 mb-1">
+                        {demonCount > 0 && (
+                          <div className="flex items-center gap-1 text-[10px]">
+                            <span className="bg-red-600 text-white px-1.5 py-0.5 rounded font-bold">😈 {demonCount}</span>
+                            <span className="text-text-muted">Demon{demonCount > 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                        {goblinCount > 0 && (
+                          <div className="flex items-center gap-1 text-[10px]">
+                            <span className="bg-green-600 text-white px-1.5 py-0.5 rounded font-bold">🤢 {goblinCount}</span>
+                            <span className="text-text-muted">Goblin{goblinCount > 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                      </div>
+                      {hasDemonOrGoblin && (
+                        <p className="text-[9px] text-orange-500 italic">
+                          ⚠️ Promotions cannot be applied to lineups with Demons or Goblins
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
                   {/* Entry Amount and Potential Payout */}
                   <div className="grid grid-cols-2 gap-2 mb-2">
                     {/* Entry Amount */}

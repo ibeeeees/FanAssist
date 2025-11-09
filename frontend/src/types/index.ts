@@ -12,5 +12,11 @@ export interface SelectedPlayer {
   selection: 'more' | 'less';
   statValue: number;
   status?: 'win' | 'loss' | 'push'; // Payout calculation status
-  modifier?: 'demon' | 'goblin' | null; // Future: special pick modifiers
+  modifier?: 'demon' | 'goblin' | null; // Special pick modifiers for enhanced payouts
+  originalStatValue?: number; // Original stat value before demon/goblin modifier
+}
+
+export interface AlternateProjection {
+  demon?: number; // Harder to win (higher line)
+  goblin?: number; // Easier to win (lower line)
 }

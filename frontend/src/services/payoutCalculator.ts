@@ -53,6 +53,32 @@ const POWER_PLAY_PAYOUTS: Record<number, number> = {
 };
 
 /**
+ * Demon Multiplier Boost Table
+ * Based on total number of picks in lineup (after pushes removed)
+ * Demons make picks harder to win but increase payout significantly
+ */
+const DEMON_MULTIPLIER_BOOST: Record<number, number> = {
+  2: 10,    // 2-pick with demon: up to 10x boost
+  3: 25,    // 3-pick with demon: up to 25x boost
+  4: 100,   // 4-pick with demon: up to 100x boost
+  5: 400,   // 5-pick with demon: up to 400x boost
+  6: 2000,  // 6-pick with demon: up to 2000x boost
+};
+
+/**
+ * Goblin Multiplier Reduction Table
+ * Goblins make picks easier to win but reduce payout
+ * Values are reduction factors (multiplied against base payout)
+ */
+const GOBLIN_MULTIPLIER_REDUCTION: Record<number, number> = {
+  2: 0.5,   // 2-pick with goblin: 50% of normal payout
+  3: 0.4,   // 3-pick with goblin: 40% of normal payout
+  4: 0.3,   // 4-pick with goblin: 30% of normal payout
+  5: 0.25,  // 5-pick with goblin: 25% of normal payout
+  6: 0.2,   // 6-pick with goblin: 20% of normal payout
+};
+
+/**
  * Flex Play Payout Multipliers
  * First key: Total number of picks
  * Second key: Number of correct picks
@@ -90,25 +116,47 @@ function countPicksByStatus(picks: Pick[]) {
 
 /**
  * Applies modifiers to the base payout multiplier
- * (Future implementation for Demon/Goblin picks)
+ * Implements Demon and Goblin logic:
+ * - Demons: Boost multiplier significantly (up to 2000x for 6-pick)
+ * - Goblins: Reduce multiplier proportionally
+ * - Mixed lineups: Apply both modifiers in sequence
  */
 function applyModifiers(
   baseMultiplier: number,
-  picks: Pick[],
-  playType: PlayType
+  picks: Pick[]
 ): number {
-  // TODO: Implement Demon and Goblin logic
-  // For now, just return the base multiplier
+  // If base multiplier is 0 (losing lineup), no modifiers apply
+  if (baseMultiplier === 0) {
+    return 0;
+  }
+
+  const demonPicks = picks.filter(p => p.modifier === 'demon');
+  const goblinPicks = picks.filter(p => p.modifier === 'goblin');
+  const totalPicks = picks.length;
   
-  // Example future logic:
-  // const demonPicks = picks.filter(p => p.modifier === 'demon');
-  // const goblinPicks = picks.filter(p => p.modifier === 'goblin');
+  let modifiedMultiplier = baseMultiplier;
   
-  // if (demonPicks.length > 0) {
-  //   baseMultiplier *= someDemonMultiplier;
-  // }
+  // Apply demon boost
+  // Each demon in the lineup adds to the multiplier boost
+  // The boost scales with total number of picks
+  if (demonPicks.length > 0) {
+    const boostPerDemon = DEMON_MULTIPLIER_BOOST[totalPicks] ?? 1;
+    // For multiple demons, boost stacks additively
+    const totalDemonBoost = boostPerDemon * demonPicks.length;
+    modifiedMultiplier = baseMultiplier + totalDemonBoost;
+  }
   
-  return baseMultiplier;
+  // Apply goblin reduction
+  // Each goblin reduces the multiplier
+  if (goblinPicks.length > 0) {
+    const reductionFactor = GOBLIN_MULTIPLIER_REDUCTION[totalPicks] ?? 1;
+    // For multiple goblins, reduction compounds multiplicatively
+    const totalReduction = Math.pow(reductionFactor, goblinPicks.length);
+    modifiedMultiplier = modifiedMultiplier * totalReduction;
+  }
+  
+  // Ensure multiplier doesn't go below 0
+  return Math.max(0, modifiedMultiplier);
 }
 
 // ============================================================================
@@ -221,8 +269,8 @@ export function calculatePayout(
     baseMultiplier = calculateFlexPlayPayout(picks);
   }
   
-  // Apply modifiers (Demon/Goblin - future implementation)
-  const finalMultiplier = applyModifiers(baseMultiplier, activePicks, playType);
+  // Apply modifiers (Demon/Goblin)
+  const finalMultiplier = applyModifiers(baseMultiplier, activePicks);
   
   // Calculate final payout amount
   const payoutAmount = entryAmount * finalMultiplier;

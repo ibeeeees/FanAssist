@@ -48,6 +48,8 @@
         "twoPointersAttempted": 15.0,
         "twoPointersMade": 8.5
       },
+      "specialModifier": "demon",
+      "modifierMultiplier": 4.0,
       "isInjured": false,
       "injuryStatus": null
     },
@@ -99,6 +101,8 @@
         "twoPointersAttempted": 8.5,
         "twoPointersMade": 6.0
       },
+      "specialModifier": "goblin",
+      "modifierMultiplier": -3.0,
       "isInjured": false,
       "injuryStatus": null
     },
@@ -150,6 +154,8 @@
         "twoPointersAttempted": 19.0,
         "twoPointersMade": 12.0
       },
+      "specialModifier": "demon",
+      "modifierMultiplier": 5.5,
       "isInjured": false,
       "injuryStatus": null
     },
