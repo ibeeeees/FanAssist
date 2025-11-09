@@ -164,13 +164,12 @@ function App() {
       </div>
 
 
-      {/* Player Picks */}
-      <div className="flex flex-row gap-1">
-        {/* Left side */}
-        <div className="">
-        
+      {/* Responsive Layout: Stack on mobile, side-by-side on desktop */}
+      <div className="flex flex-col md:flex-row gap-4 max-w-[1920px] mx-auto">
+        {/* Left side - Player Cards (takes most space on desktop) */}
+        <div className="flex-1 order-2 md:order-1">
           {/* Player Cards Grid */}
-          <div className="max-w-7xl mx-auto relative">
+          <div className="relative">
             {/* Welcome Popup */}
             <WelcomePopup triggerDelay={2000} />
 
@@ -200,14 +199,14 @@ function App() {
             </div>
           </div>
         </div>
-        {/* Right Side */}
-        <div className="">
-          {/* Selected Players Summary */}
+
+        {/* Right Side - Lineup Panel (sticky on desktop) */}
+        <aside className="w-full md:w-64 lg:w-72 xl:w-80 order-1 md:order-2 md:sticky md:top-4 md:self-start">
           <SelectedPlayersSummary 
             selectedPlayers={selectedPlayers}
             setSelectedPlayers={setSelectedPlayers}
           />
-        </div>
+        </aside>
       </div>
     </div>
   )

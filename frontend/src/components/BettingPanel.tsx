@@ -140,86 +140,86 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
   };
 
   return (
-    <div className="bg-surface p-4 rounded-lg border border-card-border">
-      {/* Balance Section - Enhanced */}
-      <div className="mb-4 p-4 bg-gradient-to-br from-card-bg via-card-bg to-surface rounded-xl border border-card-border shadow-lg">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-text-muted uppercase tracking-wide">Paper Money</span>
+    <div className="bg-surface/50 p-2 rounded-lg border border-card-border/50">
+      {/* Balance Section - Compact */}
+      <div className="mb-2 p-2 bg-card-bg/30 rounded-lg border border-card-border/30">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-semibold text-text-muted uppercase">Paper Money</span>
           <button
             onClick={() => fetchBalance(true)}
             disabled={isLoading}
-            className="text-xs text-accent1 hover:text-accent2 disabled:opacity-50 transition-colors p-1.5 hover:bg-accent1/10 rounded-lg"
+            className="text-[10px] text-accent1 hover:text-accent2 disabled:opacity-50 transition-colors"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3 h-3 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
-        <div className="flex items-center gap-3 mb-3">
-          <div className="p-2 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg">
-            <DollarSign className="w-6 h-6 text-green-500 drop-shadow-md" />
+        <div className="flex items-center gap-1.5 mb-1">
+          <div className="p-0.5 bg-green-500/20 rounded">
+            <DollarSign className="w-3 h-3 text-green-500" />
           </div>
-          <span className="text-3xl font-bold bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent">
-            {balance !== null ? `$${balance.toFixed(2)}` : 'Loading...'}
+          <span className="text-lg font-bold text-green-500">
+            {balance !== null ? `$${balance.toFixed(2)}` : '...'}
           </span>
         </div>
         <button
           onClick={handleResetBalance}
-          className="mt-2 text-xs text-text-muted hover:text-accent1 transition-colors font-medium"
+          className="text-[9px] text-text-muted hover:text-accent1 transition-colors"
         >
-          Reset Balance
+          Reset
         </button>
       </div>
 
-      {/* Bet Mode Selection */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-text mb-2">
-          Bet Mode
+      {/* Bet Mode Selection - Compact */}
+      <div className="mb-2">
+        <label className="block text-[10px] font-medium text-text mb-1">
+          Mode
         </label>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-1">
           <button
             onClick={() => setBetMode('standard')}
-            className={`py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 ${
+            className={`py-1 px-2 rounded text-[10px] font-bold transition-all ${
               betMode === 'standard'
-                ? 'bg-gradient-to-br from-accent1 to-accent2 text-black shadow-lg shadow-accent1/30 scale-105'
-                : 'bg-card-bg text-text-muted hover:bg-surface border border-card-border hover:border-accent1/30'
+                ? 'bg-gradient-to-r from-accent1 to-accent2 text-black'
+                : 'bg-card-bg/50 text-text-muted hover:bg-card-bg border border-card-border/50'
             }`}
           >
             ⚡ Power
           </button>
           <button
             onClick={() => setBetMode('flex')}
-            className={`py-3 px-4 rounded-xl text-sm font-bold transition-all duration-300 ${
+            className={`py-1 px-2 rounded text-[10px] font-bold transition-all ${
               betMode === 'flex'
-                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 scale-105'
-                : 'bg-card-bg text-text-muted hover:bg-surface border border-card-border hover:border-blue-500/30'
+                ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                : 'bg-card-bg/50 text-text-muted hover:bg-card-bg border border-card-border/50'
             }`}
           >
             🎯 Flex
           </button>
         </div>
 
-        {/* Bet Mode Info - Enhanced */}
-        <div className="mt-3 p-2.5 rounded-lg bg-gradient-to-r from-accent1/5 to-accent2/5 border border-accent1/10">
-          <p className="text-xs text-text-muted font-medium">
-            {betMode === 'standard' && '⚡ Power Play - All legs must win for maximum payout'}
-            {betMode === 'flex' && '🎯 Flex Play - Win even if 1 leg misses (reduced payout)'}
+        {/* Bet Mode Info - Compact */}
+        <div className="mt-1 p-1 rounded bg-accent1/5 border border-accent1/10">
+          <p className="text-[9px] text-text-muted leading-tight">
+            {betMode === 'standard' && 'All legs must win'}
+            {betMode === 'flex' && 'Win if 1 leg misses'}
           </p>
         </div>
       </div>
 
-      {/* Wager Input - Enhanced */}
-      <div className="mb-4">
-        <label className="block text-sm font-semibold text-text mb-3 uppercase tracking-wide">
-          Wager Amount
+      {/* Wager Input - Compact */}
+      <div className="mb-2">
+        <label className="block text-[10px] font-medium text-text mb-1">
+          Wager
         </label>
         <div className="relative">
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 p-1.5 bg-gradient-to-br from-green-500/20 to-green-600/10 rounded-lg">
-            <DollarSign className="w-4 h-4 text-green-500" />
+          <div className="absolute left-1.5 top-1/2 transform -translate-y-1/2 p-0.5 bg-green-500/20 rounded">
+            <DollarSign className="w-3 h-3 text-green-500" />
           </div>
           <input
             type="number"
             value={wagerAmount}
             onChange={(e) => setWagerAmount(e.target.value)}
-            className="w-full pl-14 pr-4 py-3 bg-card-bg border-2 border-card-border rounded-xl text-text font-semibold text-lg focus:outline-none focus:ring-2 focus:ring-accent1 focus:border-accent1 transition-all shadow-sm hover:shadow-md"
+            className="w-full pl-8 pr-2 py-1 bg-card-bg border border-card-border rounded text-text font-semibold text-sm focus:outline-none focus:ring-1 focus:ring-accent1 focus:border-accent1 transition-all"
             placeholder="50"
             min="1"
             step="1"
@@ -227,71 +227,69 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
         </div>
       </div>
 
-      {/* Place Bet Button - Enhanced */}
+      {/* Place Bet Button - Compact */}
       <button
         onClick={handlePlaceParlay}
         disabled={isLoading || selectedPlayers.length < 2}
-        className={`w-full py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 transition-all duration-300 shadow-lg ${
+        className={`w-full py-1.5 rounded text-xs font-bold text-white flex items-center justify-center gap-1 transition-all ${
           selectedPlayers.length < 2
             ? 'bg-gray-400 cursor-not-allowed opacity-50'
             : isLoading
-            ? 'bg-gradient-to-r from-blue-400 to-blue-500 cursor-wait animate-pulse'
-            : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]'
+            ? 'bg-blue-500 cursor-wait animate-pulse'
+            : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
         }`}
       >
         {isLoading ? (
           <>
-            <RefreshCw className="w-5 h-5 animate-spin" />
-            <span>Placing Bet...</span>
+            <RefreshCw className="w-3 h-3 animate-spin" />
+            <span>Placing...</span>
           </>
         ) : (
           <>
-            <TrendingUp className="w-5 h-5" />
-            <span>Place {selectedPlayers.length}-Leg Parlay</span>
+            <TrendingUp className="w-3 h-3" />
+            <span>Place {selectedPlayers.length}-Leg</span>
           </>
         )}
       </button>
 
-      {/* Parlay Info */}
+      {/* Parlay Info - Compact */}
       {selectedPlayers.length > 0 && (
-        <div className="mt-3 text-xs text-text-muted">
-          <p>• Minimum 2 legs, Maximum 6 legs</p>
-          <p>• All legs must win for payout</p>
-          <p>• {selectedPlayers.length} leg{selectedPlayers.length > 1 ? 's' : ''} selected</p>
+        <div className="mt-1 text-[9px] text-text-muted leading-tight">
+          <p>Min 2, Max 6 legs • {selectedPlayers.length} selected</p>
         </div>
       )}
 
-      {/* Error Message */}
+      {/* Error Message - Compact */}
       {error && (
-        <div className="mt-4 p-3 bg-red-100 dark:bg-red-900 rounded-lg flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-300 flex-shrink-0 mt-0.5" />
-          <span className="text-sm text-red-800 dark:text-red-200">{error}</span>
+        <div className="mt-2 p-1.5 bg-red-100 dark:bg-red-900 rounded flex items-start gap-1">
+          <AlertCircle className="w-3 h-3 text-red-600 dark:text-red-300 flex-shrink-0 mt-0.5" />
+          <span className="text-[10px] text-red-800 dark:text-red-200">{error}</span>
         </div>
       )}
 
-      {/* Bet Result */}
+      {/* Bet Result - Compact */}
       {showResult && betResult && (
-        <div className={`mt-4 p-4 rounded-lg ${
+        <div className={`mt-2 p-2 rounded ${
           betResult.betting_summary?.won 
             ? 'bg-green-100 dark:bg-green-900' 
             : 'bg-red-100 dark:bg-red-900'
         }`}>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1 mb-1">
             {betResult.betting_summary?.won ? (
-              <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-300" />
+              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-300" />
             ) : (
-              <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-300" />
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-300" />
             )}
-            <span className={`font-bold text-lg ${
+            <span className={`font-bold text-xs ${
               betResult.betting_summary?.won 
                 ? 'text-green-800 dark:text-green-200'
                 : 'text-red-800 dark:text-red-200'
             }`}>
-              {betResult.betting_summary?.won ? 'YOU WON! 🎉' : 'Bet Lost'}
+              {betResult.betting_summary?.won ? 'WON! 🎉' : 'Lost'}
             </span>
           </div>
           
-          <div className="text-sm space-y-1">
+          <div className="text-[10px] space-y-0.5">
             <p className="text-gray-800 dark:text-gray-200">
               Payout: <strong>${betResult.betting_summary?.payout?.toFixed(2)}</strong>
             </p>
@@ -299,23 +297,23 @@ export const BettingPanel: React.FC<BettingPanelProps> = ({ selectedPlayers, onC
               Profit: <strong>${betResult.betting_summary?.profit?.toFixed(2)}</strong>
             </p>
             <p className="text-gray-800 dark:text-gray-200">
-              New Balance: <strong>${betResult.betting_summary?.new_balance?.toFixed(2)}</strong>
+              Balance: <strong>${betResult.betting_summary?.new_balance?.toFixed(2)}</strong>
             </p>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-              {betResult.num_wins}/{betResult.num_legs} legs won
+            <p className="text-[9px] text-gray-600 dark:text-gray-400 mt-1">
+              {betResult.num_wins}/{betResult.num_legs} won
             </p>
             
-            {/* Simulation Results for Each Leg */}
+            {/* Simulation Results - Compact */}
             {betResult.legs && betResult.legs.length > 0 && (
-              <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">Simulation Results:</p>
-                <div className="space-y-1">
+              <div className="mt-1.5 pt-1.5 border-t border-gray-200 dark:border-gray-700">
+                <p className="text-[9px] font-semibold text-gray-700 dark:text-gray-300 mb-1">Results:</p>
+                <div className="space-y-0.5">
                   {betResult.legs.map((leg: any, index: number) => {
                     const roundToHalf = (v: number) => Math.round(v * 2) / 2;
                     const simVal = leg.simulated_value !== undefined && leg.simulated_value !== null ? roundToHalf(leg.simulated_value) : null;
                     return (
-                      <div key={index} className="text-xs">
-                        <span className="font-medium">{leg.player_name}</span> - {leg.prop_type}{' '}
+                      <div key={index} className="text-[9px] leading-tight">
+                        <span className="font-medium">{leg.player_name}</span>{' '}
                         <span className={leg.won ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
                           {leg.selection === 'more' ? 'O' : 'U'} {leg.line}: {simVal !== null ? simVal.toFixed(1) : 'N/A'} {leg.won ? '✓' : '✗'}
                         </span>
