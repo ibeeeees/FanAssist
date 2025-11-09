@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image URL Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+        img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #444;
+            display: block;
+            margin: 10px 0;
+        }
+        .url {
+            color: #4a9eff;
+            word-break: break-all;
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 5px 0;
+        }
+        .success { background: #0a4; color: white; }
+        .error { background: #a04; color: white; }
+        .loading { background: #880; color: white; }
+    </style>
+</head>
+<body>
+    <h1>NBA Headshot URL Debug</h1>
+    <p>This page tests the exact URLs that should be loading in your app.</p>
+    
+    <div id="tests"></div>
+
+    <script>
+        const testPlayers = [
+            { id: 2544, name: 'LeBron James' },
+            { id: 201939, name: 'Stephen Curry' },
+            { id: 203507, name: 'Giannis Antetokounmpo' },
+            { id: 201142, name: 'Kevin Durant' },
+            { id: 1629029, name: 'Luka Dončić' },
+        ];
+
+        const testsDiv = document.getElementById('tests');
+
+        testPlayers.forEach(player => {
+            // NBA CDN URL (primary)
+            const nbaCdnUrl = `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.id}.png`;
+            
+            // UI Avatars URL (fallback)
+            const uiAvatarsUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=100&background=10b981&color=fff&bold=true&rounded=true`;
+            
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test';
+            
+            const title = document.createElement('h2');
+            title.textContent = player.name;
+            testDiv.appendChild(title);
+            
+            const idInfo = document.createElement('div');
+            idInfo.textContent = `Player ID: ${player.id}`;
+            idInfo.style.color = '#888';
+            testDiv.appendChild(idInfo);
+            
+            // Test NBA CDN
+            const nbaCdnTitle = document.createElement('h3');
+            nbaCdnTitle.textContent = '1. NBA CDN (Primary Source)';
+            testDiv.appendChild(nbaCdnTitle);
+            
+            const nbaCdnUrlDiv = document.createElement('div');
+            nbaCdnUrlDiv.className = 'url';
+            nbaCdnUrlDiv.textContent = nbaCdnUrl;
+            testDiv.appendChild(nbaCdnUrlDiv);
+            
+            const nbaCdnStatus = document.createElement('div');
+            nbaCdnStatus.className = 'status loading';
+            nbaCdnStatus.textContent = 'Testing...';
+            testDiv.appendChild(nbaCdnStatus);
+            
+            const nbaCdnImg = document.createElement('img');
+            nbaCdnImg.src = nbaCdnUrl;
+            nbaCdnImg.onload = function() {
+                nbaCdnStatus.className = 'status success';
+                nbaCdnStatus.textContent = '✓ SUCCESS - Image loaded from NBA CDN';
+                console.log(`✓ ${player.name}: NBA CDN loaded successfully`);
+            };
+            nbaCdnImg.onerror = function() {
+                nbaCdnStatus.className = 'status error';
+                nbaCdnStatus.textContent = '✗ FAILED - Could not load from NBA CDN (will fallback)';
+                console.error(`✗ ${player.name}: NBA CDN failed`);
+            };
+            testDiv.appendChild(nbaCdnImg);
+            
+            // Test UI Avatars
+            const uiAvatarsTitle = document.createElement('h3');
+            uiAvatarsTitle.textContent = '2. UI Avatars (Fallback)';
+            uiAvatarsTitle.style.marginTop = '20px';
+            testDiv.appendChild(uiAvatarsTitle);
+            
+            const uiAvatarsUrlDiv = document.createElement('div');
+            uiAvatarsUrlDiv.className = 'url';
+            uiAvatarsUrlDiv.textContent = uiAvatarsUrl;
+            testDiv.appendChild(uiAvatarsUrlDiv);
+            
+            const uiAvatarsStatus = document.createElement('div');
+            uiAvatarsStatus.className = 'status loading';
+            uiAvatarsStatus.textContent = 'Testing...';
+            testDiv.appendChild(uiAvatarsStatus);
+            
+            const uiAvatarsImg = document.createElement('img');
+            uiAvatarsImg.src = uiAvatarsUrl;
+            uiAvatarsImg.onload = function() {
+                uiAvatarsStatus.className = 'status success';
+                uiAvatarsStatus.textContent = '✓ SUCCESS - Fallback works';
+            };
+            uiAvatarsImg.onerror = function() {
+                uiAvatarsStatus.className = 'status error';
+                uiAvatarsStatus.textContent = '✗ FAILED - Fallback also failed';
+            };
+            testDiv.appendChild(uiAvatarsImg);
+            
+            testsDiv.appendChild(testDiv);
+        });
+
+        // Add summary at top
+        setTimeout(() => {
+            const summary = document.createElement('div');
+            summary.style.cssText = 'background: #333; padding: 20px; border-radius: 8px; margin-bottom: 20px;';
+            
+            const successes = document.querySelectorAll('.status.success').length;
+            const errors = document.querySelectorAll('.status.error').length;
+            
+            summary.innerHTML = `
+                <h2>Test Summary</h2>
+                <p>✓ Successful: ${successes}</p>
+                <p>✗ Failed: ${errors}</p>
+                <p style="color: #888; margin-top: 10px;">Check browser console for detailed logs.</p>
+                <p style="color: #888;">Expected: NBA CDN should load for active players.</p>
+            `;
+            
+            document.body.insertBefore(summary, testsDiv);
+        }, 2000);
+    </script>
+</body>
+</html>

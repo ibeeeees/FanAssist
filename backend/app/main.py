@@ -2,12 +2,27 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes import players, props, analysis, betting, beginner, simulation, ml_simulation, schedule, daily_props
 from app.config import settings
+from app.services.cache_warmer import cache_warmer
+import asyncio
 
 app = FastAPI(
     title="FanAssist NBA Props & Paper Betting API",
     description="Beginner-friendly NBA prop betting analysis with AI insights and virtual money betting",
     version="1.0.0"
 )
+
+
+# Startup event to warm cache
+@app.on_event("startup")
+async def startup_event():
+    """Warm up cache on server startup for fast initial response"""
+    print("🚀 Server starting up...")
+    print("⚡ Cache warming disabled - data will load on-demand for faster startup")
+    
+    # DISABLED: Cache warmer was causing NBA API timeouts on startup
+    # This makes the server start instantly and load data as needed
+    # asyncio.create_task(cache_warmer.warmup_cache())
+    # asyncio.create_task(cache_warmer.refresh_cache_periodically(300))
 
 # CORS middleware
 app.add_middleware(

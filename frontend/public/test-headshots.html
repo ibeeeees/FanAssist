@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NBA Headshot Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .player-card {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .player-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #444;
+        }
+        .player-name {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .player-id {
+            color: #888;
+            font-size: 12px;
+        }
+        .url {
+            color: #4a9eff;
+            font-size: 10px;
+            word-break: break-all;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>NBA Headshot URL Test</h1>
+    <p>Testing if player headshots load from NBA CDN...</p>
+    
+    <div class="test-grid" id="players"></div>
+
+    <script>
+        // Test players with known IDs
+        const testPlayers = [
+            { id: '2544', name: 'LeBron James' },
+            { id: '201939', name: 'Stephen Curry' },
+            { id: '203507', name: 'Giannis Antetokounmpo' },
+            { id: '201142', name: 'Kevin Durant' },
+            { id: '1629029', name: 'Luka Dončić' },
+            { id: '203999', name: 'Nikola Jokić' },
+            { id: '203954', name: 'Joel Embiid' },
+            { id: '1628369', name: 'Jayson Tatum' },
+        ];
+
+        const grid = document.getElementById('players');
+
+        testPlayers.forEach(player => {
+            const url = `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.id}.png`;
+            
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = player.name;
+            img.onerror = function() {
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=100&background=10b981&color=fff&bold=true&rounded=true`;
+                const urlDiv = card.querySelector('.url');
+                urlDiv.textContent = 'FALLBACK: UI Avatars';
+                urlDiv.style.color = '#ff4444';
+            };
+            img.onload = function() {
+                const urlDiv = card.querySelector('.url');
+                urlDiv.textContent = '✓ Loaded from NBA CDN';
+                urlDiv.style.color = '#44ff44';
+            };
+            
+            const name = document.createElement('div');
+            name.className = 'player-name';
+            name.textContent = player.name;
+            
+            const id = document.createElement('div');
+            id.className = 'player-id';
+            id.textContent = `ID: ${player.id}`;
+            
+            const urlDiv = document.createElement('div');
+            urlDiv.className = 'url';
+            urlDiv.textContent = 'Loading...';
+            
+            card.appendChild(img);
+            card.appendChild(name);
+            card.appendChild(id);
+            card.appendChild(urlDiv);
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>

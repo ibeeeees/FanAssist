@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Activity, CircleSlash } from 'lucide-react'
 import type { SelectedPlayer } from '../types'
+import { BettingPanel } from './BettingPanel'
 
 interface SelectedPlayersSummaryProps {
   selectedPlayers: SelectedPlayer[];
@@ -45,91 +46,92 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
       </button>
     
 
-      {/* Summary Panel */}
+      {/* Summary Panel - Compact Minimal */}
       {isOpen && (
-        <div className="bg-surface p-1 rounded-lg border border-card-border">
-          {/* Top Section */}
-          <div className="flex items-center justify-start">
-            <h2 className="text-2xl font-medium text-text m-1 whitespace-nowrap">
-              {selectedPlayers.length > 0
-               ? 'Your Lineup'
-               : ''}
-            </h2>
-            <h3 className="text-sm text-text-muted m-1">
-              {selectedPlayers.length > 0 
-                ? `${selectedPlayers.length} Selected Player${selectedPlayers.length > 1 ? 's' : ''}`
-                : ''
-              }
-            </h3>
+        <div className="bg-surface rounded-lg border border-card-border shadow-xl w-64">
+          {/* Compact Header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-card-border">
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-text">Lineup</h2>
+              <span className="text-xs font-bold text-white bg-accent1 px-1.5 py-0.5 rounded">
+                {selectedPlayers.length}
+              </span>
+            </div>
             {selectedPlayers.length > 0 && (
               <button 
                 onClick={handleClearAll}
-                className="text-sm text-text-muted hover:text-text ml-auto mr-2"
+                className="text-xs font-medium text-text-muted hover:text-red-500 transition-colors"
               >
                 Clear
               </button>
             )}
           </div>
 
-          {/* Player List or Empty State */}
+          {/* Compact Player List - Scrollable */}
           {selectedPlayers.length > 0 ? (
-            <div className="flex flex-col">
+            <div className="flex flex-col max-h-[300px] overflow-y-auto divide-y divide-card-border/30">
               {selectedPlayers.map((sp, index) => (
                 <div 
                   key={`${sp.playerId}-${index}`}
-                  className="flex flex-row items-start justify-between py-2 px-2 bg-card-bg border-b border-card-border gap-2"
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-2 px-3 py-2 hover:bg-card-bg/30 transition-colors"
                 >
-                  {/* Player Details */}
-                  <div className="flex items-center gap-2 flex-1">
-                    <img src={sp.image} alt={sp.playerName} className="w-5 h-5" />
+                  {/* Column 1: Headshot FIRST */}
+                  <img src={sp.image} alt={sp.playerName} className="w-10 h-10 rounded-full flex-shrink-0 border-2 border-card-border" />
 
-                    <div className="flex flex-col items-start">
-                      <span className="font-medium text-text text-left">{sp.playerName}</span>
-                      <span className="text-xs text-text-muted text-left">
-                        <span className="bg-surface text-[10px] mr-1">NBA</span>
-                        {sp.teamAbbr} - {sp.position.join('/')}
+                  {/* Column 2: Name and Stats */}
+                  <div className="min-w-0 flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-xs text-text truncate">{sp.playerName}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-[10px] mt-0.5">
+                      <span className={`font-bold ${sp.selection === 'more' ? 'text-green-500' : 'text-red-500'}`}>
+                        {sp.selection === 'more' ? 'O' : 'U'} {sp.statValue.toFixed(1)}
                       </span>
-                      <span className="text-xs text-text-muted mt-0.5 text-left">
-                        {sp.gameDay}, {sp.gameTime} {sp.gameLocation === 'home' ? 'vs' : '@'} {sp.opponentAbbr}
-                      </span>
-                      <span className="text-sm text-text mt-0.5 text-left">
-                        <span className='font-bold text-text'>{sp.statValue.toFixed(1)}</span>
-                        <span className='text-text-muted'>{sp.category}</span>
-                      </span>
+                      <span className="text-text-muted/70 truncate">{sp.category}</span>
                     </div>
                   </div>
                   
-                  {/* More/Less Buttons */}
-                  <div className="flex flex-col">
+                  {/* Column 3: O/U Toggle Buttons */}
+                  <div className="flex gap-1 flex-shrink-0">
                     <button
                       onClick={() => handleToggleSelection(index, 'more')}
-                      className={`px-4 py-1 rounded-t text-sm font-semibold transition-all ${
+                      className={`w-6 h-6 rounded text-[10px] font-bold transition-all ${
                         sp.selection === 'more'
-                          ? 'bg-accent1 text-black'
-                          : 'bg-surface hover:bg-surface-hover text-text border border-card-border'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-card-bg text-text-muted hover:bg-green-500/20'
                       }`}
                     >
-                      More
+                      O
                     </button>
                     <button
                       onClick={() => handleToggleSelection(index, 'less')}
-                      className={`px-4 py-1 rounded-b text-sm font-semibold transition-all ${
+                      className={`w-6 h-6 rounded text-[10px] font-bold transition-all ${
                         sp.selection === 'less'
-                          ? 'bg-accent1 text-black'
-                          : 'bg-surface hover:bg-surface-hover text-text border border-card-border'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-card-bg text-text-muted hover:bg-red-500/20'
                       }`}
                     >
-                      Less
+                      U
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="flex flex-col p-5 w-full text-text-muted">
-              <CircleSlash className="w-8 h-8 mx-auto mb-2" />
-              <span className='mb-2 font-medium whitespace-nowrap'>No Players Selected</span>
-              <p className='font-light whitespace-nowrap'>Start building your lineup!</p>
+            <div className="flex flex-col items-center p-4 text-text-muted">
+              <CircleSlash className="w-6 h-6 mb-1.5" />
+              <span className='text-xs font-medium'>No Players Selected</span>
+              <p className='text-[10px] font-light'>Build your lineup!</p>
+            </div>
+          )}
+
+          {/* Betting Panel - Only show when players are selected */}
+          {selectedPlayers.length > 0 && (
+            <div className="mt-2">
+              <BettingPanel 
+                selectedPlayers={selectedPlayers}
+                onClearAll={handleClearAll}
+              />
             </div>
           )}
         </div>

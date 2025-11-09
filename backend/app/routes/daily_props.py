@@ -9,6 +9,7 @@ from app.services.popular_players import popular_players_service
 from app.services.paper_betting import PaperBettingService
 from app.services.game_simulator import game_simulator
 from app.services.nba_stats import NBAStatsService
+from app.services.cache_warmer import cache_warmer
 from datetime import datetime
 
 router = APIRouter(prefix="/api/daily-props", tags=["daily-props"])
@@ -224,6 +225,8 @@ async def get_todays_props():
     - Are ACTIVE (not injured/out)
     - Have played within the last 7 days
     
+    Uses cache warmer for fast response (5-minute TTL)
+    
     Returns:
         - List of popular players (LeBron, Curry, Giannis, etc.)
         - Season averages for each stat
@@ -231,7 +234,8 @@ async def get_todays_props():
         - Opponent and game info
     """
     try:
-        players = await popular_players_service.get_popular_players_for_today()
+        # Use cache warmer for fast response
+        players = await cache_warmer.get_today_players()
         
         return {
             "date": datetime.now().strftime("%Y-%m-%d"),
@@ -252,12 +256,25 @@ async def get_tomorrows_props():
     - Are ACTIVE (not injured/out)
     - Have played within the last 7 days
     
+    Uses cache warmer for fast response (5-minute TTL)
+    
     Returns:
         - List of popular players
         - Season averages
         - Suggested betting lines
         - Opponent and game info
     """
+    try:
+        # Use cache warmer for fast response
+        players = await cache_warmer.get_tomorrow_players()
+        
+        return {
+            "date": (datetime.now()).strftime("%Y-%m-%d"),
+            "count": len(players),
+            "players": players
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching tomorrow's props: {str(e)}")
 
 
 @router.post("/simulate-bet")
@@ -400,22 +417,28 @@ async def _simulate_bet_leg(bet):
             else:
                 season_avg_value = 0
         
+        def round_half(v: float) -> float:
+            try:
+                return round(v * 2) / 2
+            except Exception:
+                return v
+
         return {
             "player_name": bet.player_name,
             "prop_type": bet.prop_type,
             "line": bet.line,
             "pick": bet.pick,
-            "simulated_value": round(simulated_value, 1),
+            "simulated_value": round_half(simulated_value),
             "won": won,
             "probability": probability,
-            "season_average": round(season_avg_value, 1),
+            "season_average": round_half(season_avg_value),
             "simulation_details": {
-                "points": round(simulation_result.points, 1),
-                "rebounds": round(simulation_result.rebounds, 1),
-                "assists": round(simulation_result.assists, 1),
-                "three_pointers_made": round(simulation_result.three_pointers_made, 1),
-                "steals": round(simulation_result.steals, 1),
-                "blocks": round(simulation_result.blocks, 1),
+                "points": round_half(getattr(simulation_result, 'points', 0)),
+                "rebounds": round_half(getattr(simulation_result, 'rebounds', 0)),
+                "assists": round_half(getattr(simulation_result, 'assists', 0)),
+                "three_pointers_made": round_half(getattr(simulation_result, 'three_pointers_made', 0)),
+                "steals": round_half(getattr(simulation_result, 'steals', 0)),
+                "blocks": round_half(getattr(simulation_result, 'blocks', 0)),
             }
         }
         
@@ -755,3 +778,55 @@ async def reset_user_balance(username: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error resetting balance: {str(e)}")
+
+
+# ============================================================================
+# CACHE MANAGEMENT ENDPOINTS
+# ============================================================================
+
+@router.get("/cache/stats")
+async def get_cache_stats():
+    """
+    Get cache statistics and status
+    
+    Returns:
+    - Cache warmup status
+    - Cache TTL
+    - Cached keys and their ages
+    - Number of players in each cache
+    """
+    return cache_warmer.get_cache_stats()
+
+
+@router.post("/cache/refresh")
+async def refresh_cache():
+    """
+    Manually trigger cache refresh for today and tomorrow
+    
+    Useful for:
+    - Forcing fresh data after game updates
+    - Clearing stale cache
+    - Testing cache warmup
+    """
+    try:
+        await cache_warmer.warmup_cache()
+        return {
+            "message": "Cache refresh triggered successfully",
+            "stats": cache_warmer.get_cache_stats()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error refreshing cache: {str(e)}")
+
+
+@router.post("/cache/clear")
+async def clear_cache():
+    """
+    Clear all cached data
+    
+    Next request will trigger fresh fetch from NBA API
+    """
+    cache_warmer.clear_cache()
+    return {
+        "message": "Cache cleared successfully",
+        "stats": cache_warmer.get_cache_stats()
+    }

@@ -102,6 +102,7 @@ const categoryMap: Record<string, { key: keyof PlayerProjections; label: string 
 
 const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCategory = 'Popular', selectedPlayers, setSelectedPlayers }) => {
   const [selection, setSelection] = useState<'more' | 'less' | null>(null);
+  const [imageAttempt, setImageAttempt] = useState(0);
 
   // Sync selection state with selectedPlayers array
   useEffect(() => {
@@ -113,6 +114,61 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     }
   }, [selectedPlayers, player.id]);
 
+  // Get image URL with fallbacks
+  const getImageUrl = () => {
+    let url = '';
+    if (imageAttempt === 0) {
+      // Special cases mapping for players with non-standard names
+      const specialCases: { [key: string]: string } = {
+        'Luka Doncic': 'doncilu01',
+        'Luka Dončić': 'doncilu01',
+        'Nikola Jokic': 'jokicni01',
+        'Nikola Jokić': 'jokicni01',
+        'Anthony Davis': 'davisan02',
+        'Giannis Antetokounmpo': 'antetgi01',
+        'Nikola Vucevic': 'vucevni01',
+        'Nikola Vučević': 'vucevni01',
+        'Bogdan Bogdanovic': 'bogdabo01',
+        'Bogdan Bogdanović': 'bogdabo01',
+        'Bojan Bogdanovic': 'bogdabo02',
+        'Bojan Bogdanović': 'bogdabo02',
+        'Jaylen Brown': 'brownja02',  // Using 02 for correct Jaylen Brown (Celtics)
+      };
+
+      // Check if player has a special case mapping
+      let bbrefCode = specialCases[player.name];
+      
+      if (!bbrefCode) {
+        // Generate code algorithmically
+        const nameParts = player.name.split(' ');
+        const firstName = nameParts[0]?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') || '';
+        const lastName = nameParts[nameParts.length - 1]?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, '') || '';
+        
+        const lastPart = lastName.substring(0, 5).padEnd(5, lastName[0] || 'x');
+        const firstPart = firstName.substring(0, 2);
+        bbrefCode = `${lastPart}${firstPart}01`;
+      }
+      
+      url = `https://www.basketball-reference.com/req/202106291/images/headshots/${bbrefCode}.jpg`;
+    } else if (imageAttempt === 1) {
+      // Secondary: Try NBA CDN
+      url = `https://cdn.nba.com/headshots/nba/latest/1040x760/${player.id}.png`;
+    } else {
+      // Final fallback to UI Avatars
+      url = `https://ui-avatars.com/api/?name=${encodeURIComponent(player.name)}&size=100&background=10b981&color=fff&bold=true&rounded=true`;
+    }
+    
+    console.log(`[${player.name}] Attempt ${imageAttempt}: ${url}`);
+    return url;
+  };
+
+  const handleImageError = () => {
+    console.log(`[${player.name}] Image failed at attempt ${imageAttempt}`);
+    if (imageAttempt < 2) {
+      setImageAttempt(prev => prev + 1);
+    }
+  };
+
   const {
     name,
     teamAbbr,
@@ -120,11 +176,15 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
     gameLocation,
     opponentAbbr,
     gameTime,
+    gameDay,
     projections,
   } = player;
 
   const category = categoryMap[selectedCategory] || categoryMap['Popular'];
   const statValue = projections[category.key] ?? projections.points ?? 0;
+  // Round to nearest 0.5 for display
+  const roundToHalf = (v: number) => Math.round(v * 2) / 2;
+  const roundedStatValue = roundToHalf(statValue);
 
   const handleButtonClick = (type: 'more' | 'less') => {
     // If clicking the same button, deselect it
@@ -152,7 +212,8 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
           gameTime: player.gameTime,
           category: selectedCategory,
           selection: type,
-          statValue: statValue
+          // Store rounded stat value (nearest 0.5) for consistency across the UI
+          statValue: roundedStatValue
         }];
       });
     }
@@ -161,34 +222,42 @@ const PlayerCardComponent: React.FC<PlayerCardProps> = ({ player, selectedCatego
   return (
     <div className={`player-card ${selection ? 'active' : ''}`}>
         {/* Main Content Area */}
-        <div className="flex flex-col items-center justify-center p-1 overflow-hidden grow">
-            {/* Icon */}
-            <div className="w-2 h-2 rounded-full bg-accent1 shrink-0 mb-1"></div>
+        <div className="flex flex-col items-center justify-center p-1.5 overflow-hidden grow">
+            {/* Player Photo - Simple and contained */}
+            <div className="w-5 h-5 rounded-full overflow-hidden bg-accent1/20 shrink-0 mb-1 flex items-center justify-center border border-accent1/40">
+              <img 
+                src={getImageUrl()}
+                alt={player.name}
+                onError={handleImageError}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
 
             {/* Position */}
-            <div className="text-xs font-semibold text-text-muted shrink-0">
-                {position.join(' - ')}
+            <div className="text-[9px] font-semibold text-text-muted shrink-0 mb-0.5">
+                {position && position.length > 0 ? position.join(' - ') : '—'}
             </div>
 
-            {/* Name */}
-            <div className="font-light text-lg">{name}</div>
+            {/* Name - Compact */}
+            <div className="font-light text-sm leading-tight mb-0.5 text-center px-1">{name}</div>
 
-            {/* Game Info */}
-            <div className="flex flex-col text-center shrink-0 w-full align-center justify-center">
-                <div className="text-xs text-text-muted leading-tight">
-                    {teamAbbr} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr}
+            {/* Game Info - Condensed */}
+            <div className="flex flex-col text-center shrink-0 w-full items-center justify-center mb-0.5">
+                <div className="text-[10px] text-text-muted leading-tight">
+                    {teamAbbr || 'TBD'} {gameLocation === 'home' ? 'vs' : '@'} {opponentAbbr || 'TBD'}
                 </div>
-                <div className="text-xs text-text-muted">
-                    {gameTime}
+                <div className="text-[10px] text-text-muted leading-tight">
+                    {gameDay || 'Today'} • {gameTime || 'TBD'}
                 </div>
             </div>
 
-            {/* Stat Projection */}
-            <div className="flex flex-row items-baseline text-center shrink-0 gap-0.5">
-                <div className="text-2xl font-normal">
-                    {statValue.toFixed(1)}
+            {/* Stat Projection - Compact */}
+            <div className="flex flex-row items-baseline text-center shrink-0 gap-1">
+                <div className="text-xl font-normal">
+          {roundedStatValue.toFixed(1)}
                 </div>
-                <div className="text-xs text-text-muted">{category.label}</div>
+                <div className="text-[10px] text-text-muted">{category.label}</div>
             </div>
         </div>
 
