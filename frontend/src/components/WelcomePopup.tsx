@@ -42,11 +42,11 @@ export const WelcomePopup = ({
 
   // Lock/unlock scroll when popup is shown/hidden
   useEffect(() => {
-    if (showPopup) {
-      // Disable scrolling
+    if (showPopup && currentStep !== 3) {
+      // Disable scrolling for steps 1 and 2
       document.body.style.overflow = 'hidden';
     } else {
-      // Enable scrolling
+      // Enable scrolling for step 3 or when popup is closed
       document.body.style.overflow = 'unset';
     }
 
@@ -54,7 +54,7 @@ export const WelcomePopup = ({
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showPopup]);
+  }, [showPopup, currentStep]);
 
   const handleClose = () => {
     setShowPopup(false);
@@ -65,12 +65,21 @@ export const WelcomePopup = ({
   };
 
   const handleNext = () => {
-    // Scroll to top of page
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Delay showing the categories box
-    setTimeout(() => {
-      setCurrentStep(2);
-    }, 300);
+    if (currentStep === 1) {
+      // Scroll to top of page for step 2
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      // Delay showing the categories box
+      setTimeout(() => {
+        setCurrentStep(2);
+      }, 300);
+    } else if (currentStep === 2) {
+      // Scroll down to cards for step 3
+      window.scrollTo({ top: 400, behavior: 'smooth' });
+      // Delay showing the player cards overlay
+      setTimeout(() => {
+        setCurrentStep(3);
+      }, 300);
+    }
   };
 
   return (
@@ -170,7 +179,7 @@ export const WelcomePopup = ({
               }}
               className="fixed z-50 max-w-md w-full px-4"
               style={{
-                top: "140px",
+                top: "110px",
                 left: "40%",
                 transform: "translateX(-50%)",
               }}
@@ -191,7 +200,7 @@ export const WelcomePopup = ({
                 </p>
                 <div className="flex justify-end">
                   <button
-                    onClick={handleClose}
+                    onClick={handleNext}
                     className="bg-white text-purple-700 rounded font-semibold text-sm hover:bg-gray-100 transition-colors"
                     style={{ padding: "6px 12px" }}
                   >
@@ -213,6 +222,105 @@ export const WelcomePopup = ({
                   borderTop: "10px solid #7f00ff",
                 }}
               />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Player Cards Explanation - bottom-right overlay */}
+      <AnimatePresence>
+        {showPopup && currentStep === 3 && (
+          <motion.div
+            initial={{
+              x: 50,
+              opacity: 0,
+            }}
+            animate={{
+              x: 0,
+              opacity: 1,
+            }}
+            exit={{
+              x: 50,
+              opacity: 0,
+            }}
+            transition={{
+              type: "spring",
+              damping: 20,
+              stiffness: 150,
+              duration: 0.5,
+            }}
+            className="fixed bottom-6 right-6 z-50 w-full max-w-md"
+            style={{
+              maxHeight: "calc(100vh - 120px)",
+            }}
+          >
+            <div
+              className="relative rounded-lg shadow-2xl overflow-hidden"
+              style={{
+                backgroundColor: "#7f00ff",
+                color: "white",
+              }}
+            >
+              {/* Scrollable content */}
+              <div
+                style={{
+                  maxHeight: "calc(100vh - 200px)",
+                  overflowY: "auto",
+                  padding: "18px",
+                }}
+              >
+                <h2
+                  className="text-xl font-bold text-left underline"
+                  style={{
+                    marginBottom: "8px",
+                  }}
+                >
+                  Understanding Player Cards
+                </h2>
+
+                <div>
+                  <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                    Each player card displays information about the player and their line. 
+                  </p>
+
+                  <ul className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px", paddingLeft: "20px" }}>
+                    <li style={{ marginBottom: "8px" }}>
+                      The player's name and position are located at the top of each card
+                    </li>
+                    <li style={{ marginBottom: "8px" }}>
+                      The matchup info shows the opponent and game time
+                    </li>
+                    <li style={{ marginBottom: "8px" }}>
+                      The large number displays the projected value for the selected category
+                    </li>
+                    <li style={{ marginBottom: "8px" }}>
+                      Select whether you think the player will score more or less than the projection
+                    </li>
+                  </ul>
+
+                  <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                    When selecting players, you'll notice a demon or goblin icon in some of the cards. Demons and goblins are non-standard payouts, where demons pay more, but are riskier and less likely to win, and vice versa for goblins.
+                  </p>
+                </div>
+              </div>
+
+              {/* Navigation buttons */}
+              <div
+                className="flex justify-end items-center"
+                style={{
+                  padding: "0 18px 18px 18px",
+                }}
+              >
+                <button
+                  onClick={handleClose}
+                  className="bg-white text-purple-700 rounded font-semibold text-sm hover:bg-gray-100 transition-colors"
+                  style={{
+                    padding: "6px 12px",
+                  }}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
