@@ -9,13 +9,25 @@ logger = logging.getLogger(__name__)
 
 class AWSBedrockService:
     def __init__(self):
-        self.client = boto3.client(
-            'bedrock-runtime',
-            region_name=settings.aws_region,
-            aws_access_key_id=settings.aws_access_key_id,
-            aws_secret_access_key=settings.aws_secret_access_key
-        )
+        # Only initialize boto3 client if AWS credentials are provided
+        self.client = None
         self.model_id = settings.aws_bedrock_model_id
+        self.enabled = False
+        
+        if settings.aws_access_key_id and settings.aws_secret_access_key:
+            try:
+                self.client = boto3.client(
+                    'bedrock-runtime',
+                    region_name=settings.aws_region,
+                    aws_access_key_id=settings.aws_access_key_id,
+                    aws_secret_access_key=settings.aws_secret_access_key
+                )
+                self.enabled = True
+                logger.info("AWS Bedrock service initialized successfully")
+            except Exception as e:
+                logger.warning(f"Failed to initialize AWS Bedrock: {e}. AI features will be disabled.")
+        else:
+            logger.info("AWS credentials not provided. AI features will be disabled.")
         
     async def analyze_player_props_for_beginners(
         self,

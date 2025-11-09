@@ -2,9 +2,9 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    # AWS Configuration
-    aws_access_key_id: str
-    aws_secret_access_key: str
+    # AWS Configuration (Optional - only needed for AI features)
+    aws_access_key_id: Optional[str] = None
+    aws_secret_access_key: Optional[str] = None
     aws_region: str = "us-east-1"
     aws_bedrock_model_id: str = "anthropic.claude-3-sonnet-20240229-v1:0"
     
@@ -25,5 +25,6 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        env_file_encoding = 'utf-8'
 
 settings = Settings()

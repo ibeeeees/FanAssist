@@ -68,3 +68,16 @@ logs/
 # Database
 *.db
 *.sqlite
+# Test files
+test_*.py
+test_*.sh
+
+# Simulation results
+simulation_results_*.json
+
+# Logs
+*.log
+nohup.out
+
+# macOS
+.DS_Store

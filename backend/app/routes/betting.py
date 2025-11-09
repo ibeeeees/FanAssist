@@ -258,3 +258,109 @@ async def get_betting_configuration():
             "turnovers": -1.0
         }
     }
+
+
+@router.post("/users/{user_id}/bets/preview-with-simulation")
+async def preview_bet_with_simulation(user_id: str, bet_request: PlaceBetRequest):
+    """
+    🎲 Preview a bet before placing it - WITH SIMULATION
+    
+    This endpoint:
+    1. Checks if you have enough balance
+    2. Simulates the bet 50 times to show your chances
+    3. Gives you win probability and expected value
+    4. Recommends whether to place the bet
+    
+    Perfect for making informed decisions!
+    """
+    from app.services.nba_stats import nba_stats_service
+    from app.services.game_simulator import game_simulator
+    
+    try:
+        # Check user account
+        user = await paper_betting_service.get_user_account(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Check balance
+        if user.virtual_balance < bet_request.wager_amount:
+            return {
+                "can_place": False,
+                "reason": f"Insufficient balance. You have ${user.virtual_balance:.2f}, need ${bet_request.wager_amount:.2f}",
+                "current_balance": user.virtual_balance
+            }
+        
+        # Get player data for simulation
+        player_info = await nba_stats_service.get_player_info(bet_request.player_name)
+        if not player_info:
+            raise HTTPException(status_code=404, detail=f"Player '{bet_request.player_name}' not found")
+        
+        recent_games = await nba_stats_service.get_player_game_log(player_info.player_id, last_n_games=10)
+        season_averages = await nba_stats_service.get_player_season_averages(player_info.player_id)
+        
+        if not season_averages:
+            raise HTTPException(status_code=404, detail="Could not fetch player season averages")
+        
+        # Run simulation
+        sim_result = game_simulator.simulate_bet_outcome(
+            player_info=player_info,
+            season_averages=season_averages,
+            recent_games=recent_games,
+            prop_type=bet_request.prop_type,
+            line=bet_request.line_value,
+            bet_type=bet_request.bet_type,
+            num_simulations=50  # Quick simulation
+        )
+        
+        # Calculate potential payout
+        potential_payout = bet_request.wager_amount * 1.9  # Default odds
+        profit = potential_payout - bet_request.wager_amount
+        
+        # Calculate expected value (EV)
+        win_prob = sim_result["win_probability"]
+        expected_value = (win_prob * profit) - ((1 - win_prob) * bet_request.wager_amount)
+        
+        # Generate recommendation
+        if win_prob >= 0.60:
+            recommendation = "✅ STRONG PLAY - High confidence bet"
+            should_place = True
+        elif win_prob >= 0.55:
+            recommendation = "✔️ GOOD BET - Slight edge in your favor"
+            should_place = True
+        elif win_prob >= 0.48:
+            recommendation = "⚠️ COIN FLIP - Very close, proceed with caution"
+            should_place = False
+        else:
+            recommendation = "❌ AVOID - Better opportunities elsewhere"
+            should_place = False
+        
+        return {
+            "can_place": True,
+            "should_place": should_place,
+            "bet_details": {
+                "player": player_info.full_name,
+                "prop": f"{bet_request.prop_type.value.replace('_', ' ').title()}",
+                "line": bet_request.line_value,
+                "bet_type": bet_request.bet_type.value.upper(),
+                "wager": bet_request.wager_amount,
+                "potential_payout": round(potential_payout, 2),
+                "potential_profit": round(profit, 2)
+            },
+            "simulation_results": {
+                "win_probability": f"{int(win_prob * 100)}%",
+                "expected_value": round(expected_value, 2),
+                "expected_result": sim_result["expected_value"],
+                "confidence_level": sim_result["confidence_level"],
+                "percentage_over": sim_result["percentage_over"],
+                "percentage_under": sim_result["percentage_under"]
+            },
+            "recommendation": recommendation,
+            "balance_after_win": round(user.virtual_balance + profit, 2),
+            "balance_after_loss": round(user.virtual_balance - bet_request.wager_amount, 2),
+            "current_balance": user.virtual_balance
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error previewing bet: {str(e)}")
