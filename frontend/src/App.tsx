@@ -91,17 +91,17 @@ function App() {
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-3">
         <div className="flex items-center justify-between mb-4 align-baseline">
-          <div className="flex items-center gap-3">
-            <img src="/FanAssist_Logo.png" alt="FanAssist Logo" className="w-12 h-12 drop-shadow-lg"/>
+          <div className="flex items-center gap-1">
+            <img src="/FanAssist_Logo.png" alt="FanAssist Logo" className="w-5 h-5 drop-shadow-lg"/>
             <h1 className="text-4xl font-medium text-text">FanAssist</h1>
           </div>
           <div className="flex items-center gap-4">
             {/* Live Data Toggle */}
             <button
               onClick={() => setUseBackendData(!useBackendData)}
-              className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+              className={`py-0.5 px-1 rounded-lg text-sm font-medium transition-colors ${
                 useBackendData 
-                  ? 'bg-green-500 text-white' 
+                  ? 'bg-accent1 text-white' 
                   : 'bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
               }`}
               title={useBackendData ? 'Using Live Backend Data' : 'Using Static Data'}
@@ -114,10 +114,10 @@ function App() {
               <button
                 onClick={fetchPlayersFromBackend}
                 disabled={isLoading}
-                className="px-3 py-1 rounded-lg bg-blue-500 text-white text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                className="py-0.5 px-1 rounded-lg bg-accent2 text-white text-sm font-medium hover:bg-accent2/80 cursor-pointer transition-colors flex items-center gap-1"
                 title="Refresh player data"
               >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={` ${isLoading ? 'animate-spin' : ''}`} />
                 {isLoading ? 'Loading...' : 'Refresh'}
               </button>
             )}

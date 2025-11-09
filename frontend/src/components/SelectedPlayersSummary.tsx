@@ -13,6 +13,7 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
   const [isOpen, setIsOpen] = useState(true); // Always open by default
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
   const [isCollapsed, setIsCollapsed] = useState(false); // New: collapse state
+  const [hasManuallyClosedWithPlayers, setHasManuallyClosedWithPlayers] = useState(false);
 
   // Notify parent when collapse state changes
   const handleCollapseToggle = () => {
@@ -34,11 +35,16 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
   }, []);
 
   // Auto-open when a player is selected (only if currently closed)
+  // Auto-open when a player is selected for the first time (only if user hasn't manually closed it)
   useEffect(() => {
-    if (selectedPlayers.length > 0 && !isOpen) {
+    if (selectedPlayers.length > 0 && !isOpen && !hasManuallyClosedWithPlayers) {
       setIsOpen(true);
     }
-  }, [selectedPlayers.length, isOpen]);
+    // Reset the manual close flag when all players are removed
+    if (selectedPlayers.length === 0) {
+      setHasManuallyClosedWithPlayers(false);
+    }
+  }, [selectedPlayers.length, isOpen, hasManuallyClosedWithPlayers]);
 
   const handleClearAll = () => {
     setSelectedPlayers([]);
@@ -52,15 +58,24 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
     );
   };
 
+  const handleToggle = () => {
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    // Track if user manually closes while there are players selected
+    if (!newIsOpen && selectedPlayers.length > 0) {
+      setHasManuallyClosedWithPlayers(true);
+    }
+  };
+
   return (
-    <div className="relative z-10 w-full">
-      {/* Toggle Button - Always visible on mobile/tablet */}
-      <span className='absolute -top-2 -left-2 bg-accent2/50 rounded-full border border-accent2 w-2 h-2 flex items-center justify-center text-xs font-bold text-white z-20 md:hidden'>
+    <div className="relative z-10">
+      {/* Toggle Button - Always visible */}
+      <span className='absolute -top-2 -left-2 bg-accent2/50 rounded-full border border-accent2 w-2 h-2 flex items-center justify-center text-xs font-bold text-white z-20'>
         {selectedPlayers.length}
       </span>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`absolute -top-1 -left-1 z-10 bg-surface p-0.5 rounded-full border border-card-border flex items-center justify-center hover:bg-surface-hover transition-all md:hidden ${
+        onClick={handleToggle}
+        className={`absolute -top-1 -left-1 z-10 bg-surface p-0.5 rounded-full border border-card-border flex items-center justify-center hover:bg-surface-hover transition-all ${
           isOpen ? 'shadow-lg' : ''
         }`}
       >
@@ -68,30 +83,25 @@ const SelectedPlayersSummary: React.FC<SelectedPlayersSummaryProps> = ({ selecte
       </button>
     
 
-      {/* Summary Panel - Responsive & Always visible on desktop */}
-      {(isOpen || isDesktop) && (
-        <div className="bg-surface/95 backdrop-blur-sm rounded-lg border border-card-border/50 shadow-2xl w-full max-h-[85vh] flex flex-col">
-          {/* Header - Responsive with Collapse Button */}
-          <div className="flex items-center justify-between px-3 py-2 border-b border-card-border/50 flex-shrink-0">
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCollapseToggle}
-                className="text-text-muted hover:text-text transition-colors"
-                title={isCollapsed ? "Expand lineup" : "Collapse lineup"}
-              >
-                {isCollapsed ? '▼' : '▲'}
-              </button>
-              <h2 className="text-sm md:text-base font-bold text-text">Your Lineup</h2>
-              <span className="text-xs font-bold text-white bg-accent1 px-2 py-0.5 rounded">
-                {selectedPlayers.length}
-              </span>
+      {/* Summary Panel */}
+      {isOpen && (
+        <div className="bg-surface rounded-lg border border-card-border max-w-md flex flex-col" style={{ maxHeight: '600px' }}>
+          {/* Header */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-card-border shrink-0">
+            <div>
+              <h2 className="text-lg font-semibold text-text">
+                Your Lineup
+              </h2>
+              <h3 className="text-xs text-text-muted mt-0.5">
+                {selectedPlayers.length} Player{selectedPlayers.length !== 1 ? 's' : ''} Selected
+              </h3>
             </div>
             {selectedPlayers.length > 0 && (
               <button 
                 onClick={handleClearAll}
-                className="text-xs font-medium text-text-muted hover:text-red-500 transition-colors"
+                className="text-xs text-text-muted hover:text-accent1 transition-colors font-medium"
               >
-                Clear
+                Clear All
               </button>
             )}
           </div>
