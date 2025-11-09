@@ -16,59 +16,70 @@ export const WelcomePopup = ({
   triggerDelay = 2000,
 }: WelcomePopupProps) => {
   const [showPopup, setShowPopup] = useState(false);
-  const elementRef = useRef<HTMLDivElement>(null);
+  const [currentStep, setCurrentStep] = useState(1);
   const hasTriggeredRef = useRef(false);
 
   useEffect(() => {
-    const currentElement = elementRef.current;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Only trigger once when element comes into view and hasn't been triggered before
-          if (entry.isIntersecting && !hasTriggeredRef.current) {
-            hasTriggeredRef.current = true;
-            // Show popup after delay
-            setTimeout(() => {
-              setShowPopup(true);
-            }, triggerDelay);
-          }
-        });
-      },
-      {
-        threshold: 0.1,
-        rootMargin: "0px",
+    // Check scroll position to determine if user has scrolled down
+    const handleScroll = () => {
+      if (!hasTriggeredRef.current && window.scrollY > 300) {
+        hasTriggeredRef.current = true;
+        // Show popup after delay
+        setTimeout(() => {
+          setShowPopup(true);
+        }, triggerDelay);
+        // Remove listener after triggering
+        window.removeEventListener('scroll', handleScroll);
       }
-    );
+    };
 
-    if (currentElement) {
-      observer.observe(currentElement);
-    }
+    window.addEventListener('scroll', handleScroll);
 
     return () => {
-      if (currentElement) {
-        observer.unobserve(currentElement);
-      }
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [triggerDelay]);
 
+  // Lock/unlock scroll when popup is shown/hidden
+  useEffect(() => {
+    if (showPopup) {
+      // Disable scrolling
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Enable scrolling
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup: ensure scrolling is re-enabled when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPopup]);
+
   const handleClose = () => {
     setShowPopup(false);
+    setCurrentStep(1);
     if (onClose) {
       onClose();
     }
   };
 
+  const handleNext = () => {
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Delay showing the categories box
+    setTimeout(() => {
+      setCurrentStep(2);
+    }, 300);
+  };
+
   return (
     <>
-      {/* Invisible trigger element */}
-      <div ref={elementRef} style={{ position: "absolute", top: 0, left: 0, width: 1, height: 1 }} />
-
       {/* Popup with backdrop */}
       <AnimatePresence>
-        {showPopup && (
+        {showPopup && currentStep === 1 && (
           <>
-            {/* Blurred backdrop */}
+            {/* Blurred backdrop - only for step 1 */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -82,7 +93,7 @@ export const WelcomePopup = ({
               onClick={handleClose}
             />
 
-            {/* Popup box with falling animation */}
+            {/* Welcome popup - centered with falling animation */}
             <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center z-50 p-4">
               <motion.div
                 initial={{
@@ -112,31 +123,98 @@ export const WelcomePopup = ({
                   color: "white",
                 }}
               >
-                {/* Close button - positioned from edge of box, not padding */}
-                <button
-                  onClick={handleClose}
-                  className="absolute w-5 h-5 flex items-center justify-center hover:opacity-70 transition-opacity z-10"
-                  aria-label="Close"
-                  style={{
-                    color: "white",
-                    top: "4px",
-                    right: "4px"
-                  }}
-                >
-                  <span className="text-lg leading-none font-bold">&times;</span>
-                </button>
-
                 {/* Content */}
                 <div>
                   <h2 className="text-xl font-bold mb-3 text-left underline">Welcome to FanAssist!</h2>
-                  <p className="text-sm leading-relaxed text-left">
+                  <p className="text-sm leading-relaxed text-left mb-4">
                     We'll help get you started with PrizePicks and how it works, and at the end,
                     provide you with useful insights for you to use with PrizePicks!
                   </p>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleNext}
+                      className="bg-white text-purple-700 rounded font-semibold text-sm hover:bg-gray-100 transition-colors"
+                      style={{ padding: "6px 12px" }}
+                    >
+                      Next
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Categories popup - no blur, positioned at top pointing down */}
+      <AnimatePresence>
+        {showPopup && currentStep === 2 && (
+          <motion.div
+              initial={{
+                y: -50,
+                opacity: 0,
+              }}
+              animate={{
+                y: 0,
+                opacity: 1,
+              }}
+              exit={{
+                y: -50,
+                opacity: 0,
+              }}
+              transition={{
+                type: "spring",
+                damping: 15,
+                stiffness: 200,
+                duration: 0.5,
+              }}
+              className="fixed z-50 max-w-md w-full px-4"
+              style={{
+                top: "140px",
+                left: "40%",
+                transform: "translateX(-50%)",
+              }}
+            >
+            <div
+              className="relative rounded-lg shadow-2xl"
+              style={{
+                backgroundColor: "#7f00ff",
+                color: "white",
+                padding: "18px",
+              }}
+            >
+              {/* Content */}
+              <div>
+                <h2 className="text-xl font-bold text-left underline" style={{ marginBottom: "8px" }}>Categories</h2>
+                <p className="text-sm leading-relaxed text-left" style={{ marginBottom: "12px" }}>
+                  Use the category filters below to view different lines. Select any stat you like!
+                </p>
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleClose}
+                    className="bg-white text-purple-700 rounded font-semibold text-sm hover:bg-gray-100 transition-colors"
+                    style={{ padding: "6px 12px" }}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+
+              {/* Down arrow pointer */}
+              <div
+                className="absolute left-1/2"
+                style={{
+                  bottom: "-10px",
+                  transform: "translateX(-50%)",
+                  width: 0,
+                  height: 0,
+                  borderLeft: "10px solid transparent",
+                  borderRight: "10px solid transparent",
+                  borderTop: "10px solid #7f00ff",
+                }}
+              />
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
